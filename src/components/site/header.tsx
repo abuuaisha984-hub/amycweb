@@ -109,11 +109,9 @@ export function SiteHeader() {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href} legacyBehavior passHref>
-                      <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "h-9 bg-transparent px-3 text-sm font-medium")}>
-                        {item.label}
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "h-9 bg-transparent px-3 text-sm font-medium")}>
+                      <Link href={item.href}>{item.label}</Link>
+                    </NavigationMenuLink>
                   )}
                 </NavigationMenuItem>
               ))}
