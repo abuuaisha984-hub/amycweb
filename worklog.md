@@ -46,3 +46,18 @@ Stage Summary:
 - Lint clean. All public routes return 200. Admin auth verified end-to-end.
 - Admin login: superadmin@amyc.or.tz / Admin@2026 (see seed for other roles).
 - Note: dev server must be running (bun run dev) for the preview to work.
+
+---
+Task ID: 13
+Agent: main-builder (Z.ai Code)
+Task: Fix Radix UI useId hydration mismatch in SiteHeader (NavigationMenu, DropdownMenu, Sheet, CommandDialog generated different IDs on server vs client in React 19 + Next.js 16).
+
+Work Log:
+- Root cause: Radix UI components use React 19's useId internally, which generates tree-path-based IDs. The interactive header (NavigationMenu mega-menu, LanguageSwitcher dropdown, mobile Sheet, SearchDialog) rendered during SSR, producing IDs that differed from client hydration — causing "A tree hydrated but some attributes of the server rendered HTML didn't match" errors.
+- Fix: Added `mounted` state to SiteHeader; deferred all Radix-containing elements until after client mount. Static shell (utility bar, logo, plain nav links, search button, contact button) still renders during SSR to prevent layout shift. Placeholder spacers with matching dimensions fill the gap before mount.
+- Added `suppressHydrationWarning` to `<body>` as extra insurance for next-themes class injection.
+- Added eslint-disable for the legitimate setMounted(true) mount-detection pattern.
+- Verified with Agent Browser: no hydration/mismatch errors in console, mega-menu dropdown works (Overview/History/Mission/Leadership links appear), Cmd+K search dialog opens, Contact nav navigates correctly.
+
+Stage Summary:
+- Hydration mismatch resolved. Lint clean. All header interactivity preserved.
