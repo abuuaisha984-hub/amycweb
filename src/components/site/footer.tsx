@@ -3,6 +3,7 @@ import { AmycLogo } from "@/components/site/logo"
 import { FOOTER_QUICK, FOOTER_LEGAL, lp } from "@/components/site/nav-config"
 import { db } from "@/lib/db"
 import { ui, type Locale } from "@/lib/i18n"
+import { setting } from "@/lib/locale-page"
 import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react"
 
 async function getFooterData() {
@@ -34,7 +35,7 @@ const SOCIAL_ICONS: Record<string, string> = {
 export async function SiteFooter({ locale }: { locale: Locale }) {
   const { socials, settings } = await getFooterData()
   const orgName = settings.orgName || "Ansaar Muslim Youth Centre"
-  const tagline = settings.tagline || ""
+  const tagline = setting(settings, "tagline", locale)
   const email = settings.email || "info@amyc.or.tz"
   const phone = settings.phone || ""
   const address = settings.address || "Tanga, Tanzania"

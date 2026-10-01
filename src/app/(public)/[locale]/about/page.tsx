@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Target, Eye, GitBranch, Users2, ShieldCheck } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
-import { localizedField, ui, getSettings, type Locale } from "@/lib/locale-page"
+import { localizedField, ui, getSettings, setting, type Locale } from "@/lib/locale-page"
 
 async function getData() {
   const [settings, leaders, programmes] = await Promise.all([
@@ -38,7 +38,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <PageHero
         eyebrow={t("footer.about")}
         title={t("home.whoWeAre.title")}
-        description={settings.tagline}
+        description={setting(settings, "tagline", locale)}
         breadcrumbs={[{ label: t("common.home"), href: lp(locale, "/") }, { label: t("nav.about") }]}
       />
 
@@ -109,14 +109,14 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <CardContent className="p-8">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Target className="h-5 w-5" /></span>
               <h3 className="mt-4 font-serif text-xl font-semibold">{t("about.mission")}</h3>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground text-pretty">{settings.mission}</p>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground text-pretty">{setting(settings, "mission", locale)}</p>
             </CardContent>
           </Card>
           <Card className="border-accent/30">
             <CardContent className="p-8">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent/15 text-accent"><Eye className="h-5 w-5" /></span>
               <h3 className="mt-4 font-serif text-xl font-semibold">{t("about.vision")}</h3>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground text-pretty">{settings.vision}</p>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground text-pretty">{setting(settings, "vision", locale)}</p>
             </CardContent>
           </Card>
         </div>

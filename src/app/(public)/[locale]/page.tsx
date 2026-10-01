@@ -12,7 +12,7 @@ import {
   Newspaper, Radio, Sparkles, BookOpen, HeartHandshake, Hammer, Stethoscope,
   Users, Sprout, Baby, Clock,
 } from "lucide-react"
-import { localizedField, ui, formatDate, getSettings, type Locale } from "@/lib/locale-page"
+import { localizedField, ui, formatDate, getSettings, setting, type Locale } from "@/lib/locale-page"
 
 const PROGRAMME_ICONS: Record<string, any> = {
   dawah: BookOpen, education: GraduationCap, "social-welfare": HeartHandshake,
@@ -78,7 +78,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {t("hero.title")} <span className="text-accent">{t("hero.titleAccent")}</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-primary-foreground/80 text-pretty sm:text-lg">
-              {settings.tagline}
+              {setting(settings, "tagline", locale)}
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -141,7 +141,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 className="mt-4 font-serif text-3xl font-semibold tracking-tight text-foreground text-balance sm:text-4xl">
               {t("home.whoWeAre.title")}
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground text-pretty">{settings.tagline}</p>
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground text-pretty">{setting(settings, "tagline", locale)}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild className="bg-primary">
                 <Link href={lp(locale, "/about")}>{t("cta.learnMore")} <ArrowRight className="ms-1.5 h-4 w-4 rtl:rotate-180" /></Link>
