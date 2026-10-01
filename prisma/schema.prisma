@@ -1,0 +1,375 @@
+// AMYC — Ansaar Muslim Youth Centre
+// Comprehensive relational schema for the institutional digital platform.
+// Provider: SQLite (development) — designed to be portable to PostgreSQL/MySQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH & ADMINISTRATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  passwordHash     String
+  role             String    @default("CONTENT_ADMIN") // SUPER_ADMIN | CONTENT_ADMIN | EDUCATION_ADMIN | MEDIA_ADMIN | DOCUMENT_ADMIN | REGIONAL_EDITOR
+  status           String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  twoFactorEnabled Boolean   @default(false)
+  scopeRegionId    String?   // for REGIONAL_EDITOR — limits access to one Jimbo
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@index([role])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userName  String
+  action    String   // CREATE | UPDATE | DELETE | PUBLISH | UNPUBLISH | UPLOAD | LOGIN | LOGIN_FAILED | PERMISSION_CHANGE
+  entity    String   // Article | School | Region | Document | ...
+  entityId  String?
+  detail    String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAXONOMY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  type      String   // NEWS | DOCUMENT | GALLERY | EVENT | PROGRAMME
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT — Articles (News + Announcements with auto-expiry & workflow)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Article {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  kind           String    @default("NEWS") // NEWS | ANNOUNCEMENT
+  title          String
+  excerpt        String
+  content        String
+  featuredImage  String?
+  imageCredit    String?
+  category       String?
+  scope          String    @default("HQ") // HQ | REGION | SCHOOL | PROGRAMME
+  scopeRegionId  String?
+  scopeSchoolId  String?
+  author         String?
+  status         String    @default("DRAFT") // DRAFT | REVIEW | APPROVED | PUBLISHED | ARCHIVED
+  featured       Boolean   @default(false)
+  publishedAt    DateTime?
+  expiresAt      DateTime? // when reached, item auto-archives (announcements)
+  translations   String    @default("{}") // JSON { sw: {title,excerpt,content}, ar: {...} }
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([kind, status, publishedAt])
+  @@index([scope, scopeRegionId])
+  @@index([featured])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Event {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  title            String
+  description      String
+  image            String?
+  startDate        DateTime
+  endDate          DateTime?
+  startTime        String?
+  endTime          String?
+  venue            String?
+  location         String?
+  organizer        String?
+  registrationLink String?
+  contact          String?
+  category         String?
+  status           String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED | CANCELLED
+  translations     String    @default("{}")
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([startDate])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATION — Schools & Institutions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model School {
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  name               String
+  shortName          String?
+  type               String    // MAAHAD | PRIMARY | SECONDARY | COLLEGE
+  category           String?   // Religious | Environmental
+  level              String?   // Primary | O-Level | A-Level | Teacher Training
+  gender             String?   // Mixed | Boys | Girls
+  medium             String?   // Swahili | English
+  region             String?
+  district           String?
+  ward               String?
+  address            String?
+  about              String
+  history            String?
+  facilities         String    @default("[]") // JSON array of strings
+  levelsOffered      String    @default("[]") // JSON array
+  website            String?
+  logo               String?
+  image              String?
+  imageCredit        String?
+  sourceUrl          String?
+  sourceName         String?
+  dateVerified       DateTime?
+  verificationStatus String    @default("UNVERIFIED") // UNVERIFIED | VERIFIED | PARTIAL
+  status             String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  sortOrder          Int       @default(0)
+  translations       String    @default("{}")
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([type])
+  @@index([region])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REGIONS / MAJIMBO
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Region {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  name             String
+  englishName      String?
+  overview         String
+  history          String?
+  leadership       String    @default("[]") // JSON array of {position, name}
+  activities       String    @default("[]") // JSON array of strings
+  branches         String    @default("[]") // JSON array of {name, note}
+  contact          String?
+  email            String?
+  phone            String?
+  website          String?
+  image            String?
+  sortOrder        Int       @default(0)
+  status           String    @default("PUBLISHED")
+  translations     String    @default("{}")
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROGRAMMES & PROJECTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Programme {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  name             String
+  icon             String?   // lucide icon name
+  shortDescription String
+  description      String
+  image            String?
+  sortOrder        Int       @default(0)
+  status           String    @default("PUBLISHED")
+  translations     String    @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String
+  image       String?
+  region      String?
+  status      String    @default("PUBLISHED")
+  featured    Boolean   @default(false)
+  translations String   @default("{}")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([featured])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOCUMENT MANAGEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Document {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  description   String
+  category      String    // Annual Report | Strategic Plan | Policy | Form | Publication | Financial | Guideline | Official Notice
+  fileType      String    // pdf | docx | xlsx | pptx | zip | image
+  fileName      String    // generated secure filename
+  filePath      String    // /uploads/docs/...
+  fileSize      Int       // bytes
+  mimeType      String
+  thumbnail     String?
+  author        String?
+  department    String?
+  publishedAt   DateTime  @default(now())
+  downloadCount Int       @default(0)
+  status        String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  archiveDate   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([category])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA LIBRARY & GALLERIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MediaItem {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // IMAGE | VIDEO | AUDIO
+  url       String
+  thumbnail String?
+  caption   String?
+  credit    String?
+  album     String?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([type])
+}
+
+model Gallery {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  description String?
+  category    String?       // Events | Schools | Projects | Dawah | Community
+  coverImage  String?
+  status      String        @default("PUBLISHED")
+  createdAt   DateTime      @default(now())
+  items       GalleryItem[]
+}
+
+model GalleryItem {
+  id        String  @id @default(cuid())
+  galleryId String
+  mediaId   String?
+  mediaUrl  String
+  caption   String?
+  sortOrder Int     @default(0)
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATIC PAGES & LEADERSHIP
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Page {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  content      String
+  excerpt      String?
+  image        String?
+  status       String   @default("PUBLISHED")
+  translations String   @default("{}")
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+model Leader {
+  id          String   @id @default(cuid())
+  name        String
+  position    String
+  category    String   @default("NATIONAL") // NATIONAL | REGIONAL
+  regionId    String?
+  photo       String?
+  bio         String?
+  sortOrder   Int      @default(0)
+  translations String  @default("{}")
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTACT & SITE CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    String   @default("NEW") // NEW | READ | REPLIED | CLOSED
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON-encoded value
+}
+
+model SocialLink {
+  id       String @id @default(cuid())
+  platform String
+  url      String
+  handle   String?
+  icon     String?
+  sortOrder Int   @default(0)
+}
+
+model ExternalLink {
+  id       String @id @default(cuid())
+  label    String
+  url      String
+  category String? // School | Region | Institution
+  sortOrder Int    @default(0)
+}

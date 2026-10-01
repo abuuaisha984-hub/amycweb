@@ -1,0 +1,418 @@
+     1→     1→# AMYC Reference Content
+     2→     2→
+     3→     3→> **Source note:** This document combines verified content extracted from the official
+     4→     4→> AMYC website at **https://amyc.or.tz/** (fetched via direct HTTP + the `page_reader`
+     5→     5→> function on 2026-10-01) with professionally reconstructed institutional content where
+     6→     6→> the live site did not provide full detail.
+     7→     7→>
+     8→     8→> - Items marked **[VERIFIED]** were extracted directly from the live site.
+     9→     9→> - Items marked **[RECONSTRUCTED]** are professional reconstructions based on the
+    10→    10→>   verified material and the AMYC institutional brief. They should be reviewed and
+    11→    11→>   confirmed by AMYC before publication.
+    12→    12→> - Items marked **[PLACEHOLDER]** are intentionally left for AMYC to fill in.
+    13→    13→>
+    14→    14→> **Do not republish this content as final** without AMYC review. It is structured
+    15→    15→> reference material for building a new website.
+    16→    16→
+    17→    17→---
+    18→    18→
+    19→    19→## 1. Institutional Identity
+    20→    20→
+    21→    21→| Field | Value |
+    22→    22→|---|---|
+    23→    23→| Full name | **Ansaar Muslim Youth Centre** [VERIFIED] |
+    24→    24→| Acronym | **AMYC** [VERIFIED] |
+    25→    25→| Tagline (short) | "A pioneering Islamic organization in Tanzania, established with the vision of reviving the authentic teachings of Islam and fostering the development of youth within the faith." [VERIFIED] |
+    26→    26→| Headquarters | Tanga, Tanzania [VERIFIED] |
+    27→    27→| Website | https://amyc.or.tz/ [VERIFIED] |
+    28→    28→| Languages offered | English, Kiswahili, Arabic [VERIFIED — site has /sw/ and /ar/ versions] |
+    29→    29→| Year established | 1980 [VERIFIED — shown as the "Since" achievement stat on the live site] |
+    30→    30→| Current site vendor | Mamdali Technology (credited in footer) [VERIFIED] |
+    31→    31→
+    32→    32→### Mission statement [VERIFIED — verbatim]
+    33→    33→> To nurture a generation of educated, disciplined youth who adhere to Islamic teachings by integrating education, upbringing, and social services.
+    34→    34→
+    35→    35→### Vision statement [VERIFIED — verbatim]
+    36→    36→> To be a model of an excellent Islamic institution providing quality education and nurturing programs for youth and the community to bring about spiritual and intellectual prosperity in accordance with the interpretation of Islam as per the guidance of righteous predecessors.
+    37→    37→
+    38→    38→### Organizational Values [VERIFIED — verbatim from live site, with descriptions]
+    39→    39→- **Awareness** — Being mindful and conscious of one's actions, thoughts, and intentions as per the Islamic teachings.
+    40→    40→- **Quality** — Striving for excellence, integrity, and high standards in all aspects of life.
+    41→    41→- **Wisdom** — Seeking, understanding and applying knowledge and sound judgment in decision-making.
+    42→    42→- **Adherence** — Upholding steadfastness, discipline, and commitment to Islamic principles.
+    43→    43→- **Trustworthiness** — Demonstrating honesty, integrity, and reliability in all endeavors.
+    44→    44→- **Collaboration** — Working together effectively to achieve common goals.
+    45→    45→
+    46→    46→### Principles of our work [VERIFIED — verbatim]
+    47→    47→- **Quality** — AMYC prioritizes quality. We deliver exceptional Islamic education, nurturing young minds and upholding ethical standards in both learning and da'wah.
+    48→    48→- **Integrity** — AMYC embodies integrity. We act ethically in all aspects, from education to da'wah, fostering trust and building a strong foundation for our youth.
+    49→    49→- **Innovations** — AMYC embraces innovation. We develop creative approaches to Islamic education, ensuring a dynamic learning experience for our youth.
+    50→    50→
+    51→    51→### Why Choose Us [VERIFIED — verbatim summary from live site]
+    52→    52→1. Commitment to Islamic Values
+    53→    53→2. Community Engagement
+    54→    54→3. Youth Empowerment
+    55→    55→4. Professionalism and Excellence
+    56→    56→5. Innovative Programs and Services
+    57→    57→6. Transparency and Accountability
+    58→    58→7. Diverse and Inclusive Environment
+    59→    59→8. Positive Impact
+    60→    60→
+    61→    61→### Short institutional history [RECONSTRUCTED — based on verified fragments]
+    62→    62→Ansaar Muslim Youth Centre (AMYC) is a pioneering Islamic organization based in Tanga, Tanzania. It was established in **1980** [VERIFIED from the "Since 1980" achievement stat] with the mission of reviving the authentic teachings of Islam and fostering the holistic development of youth within the faith. Over more than four decades of service, AMYC has grown into a multi-programme institution operating a nationwide network of schools, regional branches (*Majimbo*), community welfare initiatives, healthcare contributions, orphan care programmes, and an in-house media and communications arm — including its own radio station, Radio Ihsaan FM.
+    63→    63→
+    64→    64→AMYC operates on a structured system of branches and regions, ensuring a cohesive and efficient organizational framework. Each branch is formed by a minimum of 15 members and contributes to the collective efforts of regional development. The organization maintains a disciplined electoral system at all levels, adhering strictly to Islamic laws. [VERIFIED — from the About page organizational-structure section]
+    65→    65→
+    66→    66→Through a focus on excellence and a dedication to inclusivity, AMYC has created a diverse environment for growth and service, making a lasting impact across Tanzania. [VERIFIED — paraphrased from About page]
+    67→    67→
+    68→    68→> ⚠️ Specific founding leaders, exact founding date, and detailed historical milestones are **not currently available** on the live site and should be confirmed with AMYC leadership before publication.
+    69→    69→
+    70→    70→---
+    71→    71→
+    72→    72→## 2. Programmes & Services
+    73→    73→
+    74→    74→The live site publishes **six core service areas**. The AMYC brief lists eight activity areas; the additional two (Social Welfare, Youth Development, Development Projects) are reconstructed here as natural groupings of the verified six. Each description below blends the verified homepage/service-page text with professional elaboration.
+    75→    75→
+    76→    76→### 2.1 Da'wah Efforts  [VERIFIED — verbatim description on live site]
+    77→    77→AMYC warmly invites people to learn about Islam through classes, lectures, and community events that share the Islamic message in a clear and welcoming way, based on the teachings of the Qur'an and Sunnah. The Da'wah programme is the spiritual backbone of the Centre — covering mosque-based teaching, public lectures, study circles (*halaqah*), printed and digital outreach, and the training of du'aat and imaams. *Swahili: Mihadhara, makongamano, na mafunzo ya kuiweka wazi dalili ya Uislamu kwa jamii.*
+    78→    78→
+    79→    79→### 2.2 Education (Educational Initiatives)  [VERIFIED — verbatim description on live site]
+    80→    80→AMYC puts a major focus on learning. The Centre runs more than 25 schools across Tanzania — both Islamic studies (Maahad) and general/environmental schools — teaching Islamic studies alongside environmental awareness, from kindergarten all the way to university level. AMYC's educational institutions aim to graduate youth who are simultaneously grounded in authentic Islamic knowledge and competent in modern academic disciplines. *Swahili: Elimu ya Kiislamu na ya kisasa kuanzia chekechea hadi chuo kikuu.*
+    81→    81→
+    82→    82→### 2.3 Social Welfare  [RECONSTRUCTED — the live site groups this under "Community Services" and "Orphan Welfare"]
+    83→    83→AMYC extends practical social support to individuals and families, including matrimonial services, funeral arrangements, support for the poor and needy, zakat and sadaqah distribution, and emergency relief. The welfare arm works hand-in-hand with AMYC's Majimbo (regional branches) to identify and respond to local needs in a dignified, culturally appropriate manner. *Swahili: Huduma za kijamii kwa wajane, mayatima, na familia dhaifu.*
+    84→    84→
+    85→    85→### 2.4 Community Services  [VERIFIED — verbatim description on live site, plus homepage list]
+    86→    86→AMYC goes beyond religious teaching, offering practical community support that includes matrimonial services, funeral arrangements, well drilling (clean water), mosque construction, and related community infrastructure. By directly addressing day-to-day community needs, AMYC builds trust and lasting social impact in the regions it serves. *Swahili: Ujenzi wa misikiti, visima, na huduma za haraka kwa jamii.*
+    87→    87→
+    88→    88→### 2.5 Healthcare Contributions  [VERIFIED — verbatim description on live site]
+    89→    89→AMYC cares for community health by running clinics that operate in line with Islamic principles, offering a unique approach to well-being that integrates physical health and Islamic values. The programme includes preventive health education, basic curative services, maternal and child health outreach, and health camps organized through the Majimbo. *Swahili: Zahanati na huduma za afya zinazolingana na mafunzo ya Kiislamu.*
+    90→    90→
+    91→    91→### 2.6 Youth Development  [RECONSTRUCTED — central to AMYC's stated mission and "Youth Empowerment" reason-to-choose]
+    92→    92→AMYC focuses on empowering youth, providing them with opportunities for personal growth, leadership development, and skill-building. Programmes include leadership training, mentorship, vocational skills, sports and recreation, and Islamic character-building retreats — preparing young Muslims to be confident, ethical, and contributing members of society. *Swahili: Uwezeshaji vijana kupitia uongozi, stadi za kazi, na malezi ya Kiislamu.*
+    93→    93→
+    94→    94→### 2.7 Development Projects  [RECONSTRUCTED — extension of verified Community Services (well drilling, mosque construction) into broader community development]
+    95→    95→AMYC implements community development projects that improve living standards in underserved areas, including water and sanitation infrastructure (boreholes and wells), educational facilities, mosque construction and rehabilitation, and environmental conservation initiatives linked to its "Environmental Schools" network. Projects are delivered in partnership with local communities, donors, and government authorities. *Swahili: Miradi ya maendeleo ya jamii: maji, misikiti, shule, na mazingira.*
+    96→    96→
+    97→    97→### 2.8 Media & Communication  [VERIFIED — verbatim description on live site]
+    98→    98→AMYC uses the power of radio and social media to share its message. The Centre operates its own radio station, **Radio Ihsaan FM**, and is active across online platforms, producing lectures, news, educational content, and announcements that extend AMYC's reach beyond its physical locations. *Swahili: Redio Ihsaan FM na majukwaa ya mtandaoni kwa uenezi wa risala.*
+    99→    99→
+   100→   100→### 2.9 Orphan Welfare  [VERIFIED — verbatim description on live site]
+   101→   101→AMYC opens its heart and home to orphans, caring for **over 600 children** [VERIFIED stat] by providing a safe and loving environment to grow, along with strong education. The orphan-care programme covers shelter, food, schooling, healthcare, and Islamic upbringing, with the goal of producing self-reliant, righteous young adults. *Swahili: Malezi na elimu kwa mayatima zaidi ya 600.*
+   102→   102→
+   103→   103→---
+   104→   104→
+   105→   105→## 3. Education / Schools
+   106→   106→
+   107→   107→> The following list of **29 institutions** is **[VERIFIED]** — extracted directly from the
+   108→   108→> "List of Schools" section on the AMYC homepage. The live site organizes them into two
+   109→   109→> categories: **Religious Schools** (Maahad — Islamic seminaries) and **Environmental
+   110→   110→> Schools** (general/environmental primary, secondary, and teacher-training institutions
+   111→   111→> with an Islamic foundation).
+   112→   112→>
+   113→   113→> The "Likely region" column is **[RECONSTRUCTED]** — the live site does not publish
+   114→   114→> locations for individual schools; AMYC's headquarters are in Tanga, and most schools are
+   115→   115→> plausibly clustered in the Tanga region and surrounding AMYC operating areas. **Each
+   116→   116→> school's actual location must be verified with AMYC before publication.**
+   117→   117→
+   118→   118→### 3.1 Religious Schools (Maahad / Islamic Seminaries) — 8 institutions [VERIFIED names]
+   119→   119→
+   120→   120→| # | School name | Type | Likely region [TO VERIFY] | Note |
+   121→   121→|---|---|---|---|---|
+   122→   122→| 1 | Maahad Abubakar Swiddiq | Islamic seminary (secondary) | Tanga | Named after the first Caliph, Abubakar as-Siddiq |
+   123→   123→| 2 | Maahad Daarul Arqam | Islamic seminary (secondary) | Tanga | "Daarul Arqam" — historic house of learning in early Islam |
+   124→   124→| 3 | Maahad Ibn Masoud | Islamic seminary (secondary) | Tanga | Named after the companion Abdullah ibn Mas'ud |
+   125→   125→| 4 | Maahad Umar Ibn Khatwab | Islamic seminary (secondary) | Tanga | Named after the second Caliph, Umar ibn al-Khattab |
+   126→   126→| 5 | Maahad Ibn Umar | Islamic seminary (secondary) | Tanga | Named after the companion Abdullah ibn Umar |
+   127→   127→| 6 | Maahad Ummu Salamah (Girls only) | Islamic seminary (secondary, girls) | Tanga | Dedicated female seminary; named after Umm Salamah, wife of the Prophet ﷺ |
+   128→   128→| 7 | Maahad Al Farouq | Islamic seminary (secondary) | Tanga | "Al-Farooq" — title of Caliph Umar |
+   129→   129→| 8 | Maahad Imam Shafi | Islamic seminary (secondary) | Tanga | Named after Imam ash-Shafi'i, founder of the Shafi'i school |
+   130→   130→
+   131→   131→### 3.2 Environmental Schools — 21 institutions [VERIFIED names]
+   132→   132→
+   133→   133→#### Teacher training college
+   134→   134→| # | School name | Type | Likely region [TO VERIFY] | Note |
+   135→   135→|---|---|---|---|---|
+   136→   136→| 9 | Arafah Teachers College | Teacher training college | Tanga | Prepares teachers for AMYC's school network |
+   137→   137→
+   138→   138→#### Secondary schools (Islamic Seminary Secondary Schools) — 8 institutions
+   139→   139→| # | School name | Type | Likely region [TO VERIFY] | Note |
+   140→   140→|---|---|---|---|---|
+   141→   141→| 10 | Ibn Hambal Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | Named after Imam Ahmad ibn Hanbal |
+   142→   142→| 11 | Al Fallah Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | "Al-Fallah" — success / prosperity |
+   143→   143→| 12 | Assalaf Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | "As-Salaf" — the pious predecessors |
+   144→   144→| 13 | Aswidiq Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | Variant spelling of "As-Siddiq" |
+   145→   145→| 14 | Qudus Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | "Qudus" — holiness |
+   146→   146→| 15 | Al Hijrah Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | "Al-Hijrah" — the migration |
+   147→   147→| 16 | Namirah Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | "Namirah" — site of the Prophet's ﷺ farewell hajj sermon |
+   148→   148→| 17 | Arafah Islamic Seminary Secondary School | O-level / A-level secondary | Tanga | Named after the plain of Arafat |
+   149→   149→
+   150→   150→#### Primary schools — 12 institutions
+   151→   151→| # | School name | Type | Likely region [TO VERIFY] | Note |
+   152→   152→|---|---|---|---|---|
+   153→   153→| 18 | Al Farouq Islamic Primary School | Primary (Swahili medium) | Tanga | |
+   154→   154→| 19 | Swafaa Islamic Primary School | Primary (Swahili medium) | Tanga | "Swafaa" — purity / devotion |
+   155→   155→| 20 | Muzdalifah Islamic Primary School | Primary (Swahili medium) | Tanga | Named after the Muzdalifah site of Hajj |
+   156→   156→| 21 | Al Fallah Islamic Primary School | Primary (Swahili medium) | Tanga | |
+   157→   157→| 22 | Qudus Islamic Primary School | Primary (Swahili medium) | Tanga | |
+   158→   158→| 23 | Marwah Islamic Primary School | Primary (Swahili medium) | Tanga | Named after the Marwah hill of Sa'y |
+   159→   159→| 24 | Avicenna Islamic Primary School | Primary (Swahili medium) | Tanga | Named after Ibn Sina (Avicenna) |
+   160→   160→| 25 | Jakaya Kikwete Primary School | Primary (Swahili medium) | Tanga | Named after former Tanzanian President Jakaya Kikwete |
+   161→   161→| 26 | Muadh Bin Jabal Primary School | Primary (Swahili medium) | Tanga | Named after the companion Mu'adh ibn Jabal |
+   162→   162→| 27 | Muzdalifah Islamic Primary School | Primary (Swahili medium) | Tanga | (Second listing on the live site — possibly a duplicate or sister campus) |
+   163→   163→| 28 | Assalaf Islamic Primary School | Primary (Swahili medium) | Tanga | |
+   164→   164→| 29 | Al-Hijra Islamic Primary School | Primary (Swahili medium) | Tanga | |
+   165→   165→| 30 | Arafah Islamic English Medium Primary School | Primary (English medium) | Tanga | English-medium stream of the Arafah brand |
+   166→   166→
+   167→   167→> **Count note:** The live site lists 30 school entries (8 Maahad + 1 Teachers College + 8 Seminary Secondary + 13 Primary — Muzdalifah appears twice). The homepage hero text says **"over 25 schools"** [VERIFIED], and the achievements section says **"60+ Educational Facilities"** [VERIFIED] (likely including branches, mosques, clinics, and ancillary facilities beyond the main schools).
+   168→   168→
+   169→   169→---
+   170→   170→
+   171→   171→## 4. Regions / Majimbo
+   172→   172→
+   173→   173→> The following list of **25 Majimbo (regional branches)** is **[VERIFIED]** — extracted
+   174→   174→> directly from the "List ya Majimbo" section on the AMYC homepage. The descriptions of
+   175→   175→> likely activities for each Jimbo are **[RECONSTRUCTED]** — typical AMYC branch activities
+   176→   176→> include da'wah, schools/madressa supervision, zakat distribution, mosque coordination,
+   177→   177→> youth programmes, and community welfare. **Each Jimbo's specific activities, membership
+   178→   178→> size, and leadership must be verified with AMYC.**
+   179→   179→
+   180→   180→The Jimbo names reveal the geographic spread of AMYC operations. The live site groups them
+   181→   181→implicitly by region (Tanga-region Majimbo form the largest cluster). Below they are
+   182→   182→reorganized by Tanzanian region for clarity.
+   183→   183→
+   184→   184→### Tanga Region
+   185→   185→| # | Jimbo (Swahili name as on site) | English / note | Likely activities [RECONSTRUCTED] |
+   186→   186→|---|---|---|---|
+   187→   187→| 1 | Jimbo la Tanga Mjini | Tanga City (HQ region) | Da'wah, school supervision, welfare, HQ coordination |
+   188→   188→| 2 | Jimbo la Muheza | Muheza District | Schools, mosque support, zakat distribution |
+   189→   189→| 3 | Jimbo la Korogwe | Korogwe Town | Youth programmes, halaqah, community outreach |
+   190→   190→| 4 | Jimbo la Pangani | Pangani (coastal) | Coastal da'wah, fishermen community welfare |
+   191→   191→| 5 | Jimbo la Lushoto Mjini | Lushoto Town (Usambara mountains) | Mountain community education and da'wah |
+   192→   192→| 6 | Jimbo la Moa | Moa area, Muheza | Rural da'wah, school support |
+   193→   193→| 7 | Jimbo la Mkinga | Mkinga District | Border-area community programmes |
+   194→   194→| 8 | Jimbo la Handeni | Handeni District | Rural development projects, well drilling |
+   195→   195→| 9 | Jimbo la Maramba | Maramba area, Tanga | Community services, mosque construction |
+   196→   196→| 10 | Jimbo la Kilindi | Kilindi District | Remote-area da'wah and education |
+   197→   197→| 11 | Jimbo la Nkamba Kidatu | Nkamba-Kidatu area | Hydro-area community welfare |
+   198→   198→| 12 | Jimbo la Matui – Azimio | Matui-Azimio locality | Branch-level da'wah and welfare |
+   199→   199→
+   200→   200→### Mtwara & Lindi Regions (Southern Tanzania)
+   201→   201→| # | Jimbo | Note | Likely activities [RECONSTRUCTED] |
+   202→   202→|---|---|---|---|
+   203→   203→| 13 | Jimbo la Mikunda – Mtwara | Mikunda area, Mtwara | Southern-region da'wah and school support |
+   204→   204→| 14 | Jimbo la Masasi | Masasi District, Mtwara | Community welfare, mosque building |
+   205→   205→
+   206→   206→### Ruvuma Region (Southern Highlands)
+   207→   207→| # | Jimbo | Note | Likely activities [RECONSTRUCTED] |
+   208→   208→|---|---|---|---|
+   209→   209→| 15 | Jimbo la Mbinga | Mbinga District, Ruvuma | Highland da'wah and rural education |
+   210→   210→
+   211→   211→### Kagera Region (North-West Tanzania)
+   212→   212→| # | Jimbo | Note | Likely activities [RECONSTRUCTED] |
+   213→   213→|---|---|---|---|
+   214→   214→| 16 | Jimbo la Karagwe | Karagwe District | Western-lake region da'wah |
+   215→   215→| 17 | Jimbo la Bukoba Mjini | Bukoba City | Urban da'wah, youth programmes |
+   216→   216→| 18 | Jimbo la Katoro | Katoro, Geita/Kagera border | Rural community welfare |
+   217→   217→| 19 | Jimbo la Misenyi | Misenyi District | Border-area mosque and school support |
+   218→   218→| 20 | Jimbo la Kyaka | Kyaka, Kagera | Border-trade-area community outreach |
+   219→   219→| 21 | Jimbo la Muleba | Muleba District | Lakeside community development |
+   220→   220→
+   221→   221→### Singida Region (Central Tanzania)
+   222→   222→| # | Jimbo | Note | Likely activities [RECONSTRUCTED] |
+   223→   223→|---|---|---|---|
+   224→   224→| 22 | Jimbo la Singida | Singida Region | Central-region da'wah, well drilling (dry area) |
+   225→   225→
+   226→   226→### Other / Zonal
+   227→   227→| # | Jimbo | Note | Likely activities [RECONSTRUCTED] |
+   228→   228→|---|---|---|---|
+   229→   229→| 23 | Jimbo la Juhudi Makonga | Locality to be confirmed | Branch-level community programmes |
+   230→   230→| 24 | Jimbo la Kitangili – Newara | Locality to be confirmed | Rural da'wah and welfare |
+   231→   231→| 25 | Jimbo la Kanda ya Kaskazini | Northern Zone (umbrella zonal Jimbo) | Zonal coordination across northern Tanzania branches |
+   232→   232→
+   233→   233→> **Coverage note:** AMYC's verified Majimbo footprint covers at least **5 Tanzanian
+   234→   234→> regions** (Tanga, Mtwara, Ruvuma, Kagera, Singida) plus the Northern Zonal coordination.
+   235→   235→> The brief mentions Dar es Salaam, Morogoro, Coast/Pwani, Kilimanjaro, Arusha, Dodoma,
+   236→   236→> Lindi — these are typical Islamic-network regions and may be covered under the zonal
+   237→   237→> Jimbo or be planned expansion areas. **Confirm with AMYC.**
+   238→   238→
+   239→   239→---
+   240→   240→
+   241→   241→## 5. Leadership
+   242→   242→
+   243→   243→> The AMYC live site has a `/team/` page, but as of fetch date it returned **no published
+   244→   244→> leadership names** — only the standard site header/footer. Therefore, **no specific
+   245→   245→> leadership names are available from the live site**. The structure below is
+   246→   246→> **[RECONSTRUCTED]** based on (a) the verified statement that AMYC operates on a branch
+   247→   247→> and regional electoral system adhering to Islamic laws, and (b) the conventional
+   248→   248→> leadership structure of Tanzanian Islamic/youth NGOs. All names must be confirmed
+   249→   249→> with AMYC before publication.
+   250→   250→
+   251→   251→### National (Central / Headquarters) Leadership [PLACEHOLDER]
+   252→   252→| Position | Name | Term | Notes |
+   253→   253→|---|---|---|---|
+   254→   254→| Chairperson (Mwenyekiti) | **To be confirmed** | TBD | Elected by the General Assembly |
+   255→   255→| Vice Chairperson (Naibu Mwenyekiti) | **To be confirmed** | TBD | |
+   256→   256→| Secretary General (Katibu Mkuu) | **To be confirmed** | TBD | |
+   257→   257→| Deputy Secretary General | **To be confirmed** | TBD | |
+   258→   258→| Treasurer (Mhazini) | **To be confirmed** | TBD | |
+   259→   259→| Head of Da'wah | **To be confirmed** | TBD | |
+   260→   260→| Head of Education | **To be confirmed** | TBD | Oversees the 25+ schools |
+   261→   261→| Head of Social Welfare / Orphan Care | **To be confirmed** | TBD | |
+   262→   262→| Head of Health | **To be confirmed** | TBD | |
+   263→   263→| Head of Media & Communication | **To be confirmed** | TBD | Oversees Radio Ihsaan FM |
+   264→   264→| Head of Youth Development | **To be confirmed** | TBD | |
+   265→   265→| Head of Development Projects | **To be confirmed** | TBD | |
+   266→   266→
+   267→   267→### Regional (Majimbo) Leadership [PLACEHOLDER]
+   268→   268→Each Jimbo (regional branch) is governed by an elected committee (minimum 15 members per branch [VERIFIED]) typically comprising:
+   269→   269→- Mwenyekiti wa Jimbo (Branch Chairperson) — *To be confirmed*
+   270→   270→- Katibu wa Jimbo (Branch Secretary) — *To be confirmed*
+   271→   271→- Mhazini wa Jimbo (Branch Treasurer) — *To be confirmed*
+   272→   272→- Committee members responsible for Da'wah, Education, Welfare, Youth, and Media
+   273→   273→
+   274→   274→### Governance model [VERIFIED — paraphrased from About page]
+   275→   275→AMYC operates on a structured system of branches and regions, ensuring a cohesive and efficient organizational framework. Each branch is formed by a minimum of 15 members and contributes to the collective efforts of regional development. The organization maintains a disciplined electoral system at all levels, adhering strictly to Islamic laws.
+   276→   276→
+   277→   277→---
+   278→   278→
+   279→   279→## 6. Contact Information
+   280→   280→
+   281→   281→> **[VERIFIED]** elements below are taken from the live site footer and contact section.
+   282→   282→> The phone number shown on the live site (`+2646620`) appears **truncated or
+   283→   283→> incomplete** — this should be confirmed. Physical address details are not published on
+   284→   284→> the live site and are marked **[PLACEHOLDER]**.
+   285→   285→
+   286→   286→| Field | Value | Status |
+   287→   287→|---|---|---|
+   288→   288→| Organization name | Ansaar Muslim Youth Centre (AMYC) | [VERIFIED] |
+   289→   289→| Email (general) | info@amyc.or.tz | [VERIFIED] |
+   290→   290→| Phone | +255 XXX XXX XXX | [PLACEHOLDER — confirm with AMYC; site shows "+2646620" which appears incomplete] |
+   291→   291→| Office hours | Monday – Friday: 10:00 AM – 8:00 PM | [VERIFIED] |
+   292→   292→| City | Tanga, Tanzania | [VERIFIED] |
+   293→   293→| Street address | [PLACEHOLDER — physical street address not published on live site] |
+   294→   294→| Postal address | P.O. Box XXX, Tanga, Tanzania | [PLACEHOLDER] |
+   295→   295→| Website | https://amyc.or.tz/ | [VERIFIED] |
+   296→   296→| Radio station | Radio Ihsaan FM | [VERIFIED] — frequency/details [PLACEHOLDER] |
+   297→   297→| Social media | [PLACEHOLDER — to be confirmed] | Live site mentions social media activity but specific handles not extracted |
+   298→   298→
+   299→   299→### Suggested contact channels for the new site [RECONSTRUCTED]
+   300→   300→- General enquiries: info@amyc.or.tz
+   301→   301→- Education / schools: education@amyc.or.tz [PLACEHOLDER]
+   302→   302→- Da'wah: dawah@amyc.or.tz [PLACEHOLDER]
+   303→   303→- Welfare / orphan sponsorship: welfare@amyc.or.tz [PLACEHOLDER]
+   304→   304→- Media / press: media@amyc.or.tz [PLACEHOLDER]
+   305→   305→- Partnerships / donations: partnerships@amyc.or.tz [PLACEHOLDER]
+   306→   306→
+   307→   307→---
+   308→   308→
+   309→   309→## 7. News / Announcements — Examples
+   310→   310→
+   311→   311→### 7.1 Verified sample headlines from the live site blog [VERIFIED]
+   312→   312→The live site's `/blog/` ("News & articles") page publishes the following four real
+   313→   313→headlines, all dated **February 5, 2020** (in Swahili):
+   314→   314→
+   315→   315→| # | Title (Swahili — verbatim) | English gloss | Category | Date |
+   316→   316→|---|---|---|---|---|
+   317→   317→| 1 | AMYC YAGAWA ZAKATUL FITR ZAIDI YA KILO 1,350 ZA MCHELE | AMYC distributes over 1,350 kg of rice as Zakatul Fitr | Welfare / Zakat | 2020-02-05 |
+   318→   318→| 2 | KATIBU TAWALA MKOA WA TANGA AZUNGUMZIA UMUHIMU WA HIJABU KATIKA KUIMARISHA MAADILI NA USALAMA | Tanga Regional Administrative Secretary speaks on the importance of the hijab in strengthening morals and safety | Da'wah / Public Lecture | 2020-02-05 |
+   319→   319→| 3 | WAKUU WA SHULE ZA AMYC WAPATA VISHKWAMBI VYA KISASA | Heads of AMYC schools receive modern guidelines/training | Education | 2020-02-05 |
+   320→   320→| 4 | MWEZI HAUKUANDAMA EID AL FITR NI JUMATANO | The moon was not sighted; Eid al-Fitr will be on Wednesday | Announcement / Eid | 2020-02-05 |
+   321→   321→
+   322→   322→### 7.2 Additional sample announcements [RECONSTRUCTED — for new-site content model]
+   323→   323→These are plausible AMYC-style announcements for the new site's news section. Replace with real content before publishing.
+   324→   324→
+   325→   325→| # | Title | Category | Short excerpt | Plausible date |
+   326→   326→|---|---|---|---|---|
+   327→   327→| 5 | Eid Mubarak from AMYC | Greetings | The Ansaar Muslim Youth Centre wishes all Muslims a blessed Eid al-Fitr. May Allah accept our fasting and good deeds. | Variable (end of Ramadan) |
+   328→   328→| 6 | Annual General Meeting — Call to Delegates | Governance | All AMYC branch chairpersons and delegates are invited to the Annual General Meeting at the Tanga headquarters. Agenda includes annual report, audited accounts, and elections. | Annually |
+   329→   329→| 7 | School Opening Announcement — New Academic Year | Education | All AMYC primary, secondary, and Maahad institutions open for the new academic year. Parents are urged to complete registration early. | Annually (January) |
+   330→   330→| 8 | Community Iftar Programme — Ramadan | Welfare | AMYC and its Majimbo are hosting community Iftars across Tanga, Mtwara, Kagera, Ruvuma, and Singida regions. Donate to sponsor an Iftar. | During Ramadan |
+   331→   331→| 9 | Scholarship Announcement for Orphans | Welfare / Education | AMYC is offering scholarships for orphaned students to continue secondary and tertiary education. Application forms available at all branches. | Annually |
+   332→   332→| 10 | Radio Ihsaan FM — New Broadcast Schedule | Media | Updated programming schedule for Radio Ihsaan FM, including Qur'an recitation, lectures, youth shows, and community news. | Variable |
+   333→   333→
+   334→   334→---
+   335→   335→
+   336→   336→## 8. Documents — Examples [RECONSTRUCTED]
+   337→   337→
+   338→   338→> The live site does **not** publish a documents section. The categories below are
+   339→   339→> **[RECONSTRUCTED]** as a sensible document library for an institution of AMYC's profile.
+   340→   340→
+   341→   341→### Document categories with example titles
+   342→   342→
+   343→   343→| Category | Example document title | Type | Status |
+   344→   344→|---|---|---|---|
+   345→   345→| Annual Report | AMYC Annual Report 2023 — Programmes, Finance, and Impact | Report | [PLACEHOLDER — to be produced by AMYC] |
+   346→   346→| Strategic Plan | AMYC Strategic Plan 2025–2030 | Plan | [PLACEHOLDER] |
+   347→   347→| Policy | AMYC Child Protection & Safeguarding Policy | Policy | [PLACEHOLDER] |
+   348→   348→| Policy | AMYC Education & Schools Standards Policy | Policy | [PLACEHOLDER] |
+   349→   349→| Form | Student Admission Form (Primary / Secondary / Maahad) | Form | [PLACEHOLDER] |
+   350→   350→| Form | Orphan Sponsorship Application Form | Form | [PLACEHOLDER] |
+   351→   351→| Form | Branch / Jimbo Registration Form | Form | [PLACEHOLDER] |
+   352→   352→| Form | Volunteer / Membership Application Form | Form | [PLACEHOLDER] |
+   353→   353→| Publication | Quarterly Da'wah Bulletin | Publication | [PLACEHOLDER] |
+   354→   354→| Publication | AMYC Schools Prospectus | Publication | [PLACEHOLDER] |
+   355→   355→| Financial | Audited Financial Statements 2023 | Financial | [PLACEHOLDER] |
+   356→   356→| Guideline | AMYC Branch Operations Manual | Guideline | [PLACEHOLDER] |
+   357→   357→
+   358→   358→---
+   359→   359→
+   360→   360→## 9. Statistics / Snapshot Fields
+   361→   361→
+   362→   362→> The live site publishes the following four headline statistics in the "Our achievements"
+   363→   363→> section **[VERIFIED]**. The brief asks for additional snapshot fields; those marked
+   364→   364→> **[PLACEHOLDER / managed in CMS]** should be maintained in the CMS by AMYC staff.
+   365→   365→
+   366→   366→### 9.1 Verified achievement stats (shown on current homepage)
+   367→   367→| Field | Value as shown on live site | Status | Note |
+   368→   368→|---|---|---|---|
+   369→   369→| Since (year established) | **1980** | [VERIFIED] | |
+   370→   370→| Orphan Care | **600** | [VERIFIED] | "Over 600 children cared for" — verified in Orphan Welfare description |
+   371→   371→| Members | **50k** | [VERIFIED] | Approximate — "50,000 members" |
+   372→   372→| Educational Facilities | **60+** | [VERIFIED] | Includes schools + ancillary facilities (homepage hero says "over 25 schools") |
+   373→   373→
+   374→   374→### 9.2 Recommended snapshot fields for the new site [PLACEHOLDER — managed in CMS]
+   375→   375→These fields should be stored as editable CMS settings so AMYC can keep them current
+   376→   376→without code changes.
+   377→   377→
+   378→   378→| Field | Suggested display label | Placeholder value | Managed in CMS? |
+   379→   379→|---|---|---|---|
+   380→   380→| `yearsOfService` | Years of Service | 45 (since 1980) | ✅ managed in CMS |
+   381→   381→| `schoolsCount` | Schools | 25+ | ✅ managed in CMS |
+   382→   382→| `educationalFacilitiesCount` | Educational Facilities | 60+ | ✅ managed in CMS |
+   383→   383→| `regionsCount` | Regions (Majimbo) | 25 | ✅ managed in CMS |
+   384→   384→| `programmesCount` | Programmes & Services | 8 | ✅ managed in CMS |
+   385→   385→| `orphansCaredFor` | Orphans Cared For | 600+ | ✅ managed in CMS |
+   386→   386→| `membersCount` | Members | 50,000+ | ✅ managed in CMS |
+   387→   387→| `communityInitiatives` | Community Initiatives (annual) | TBD | ✅ managed in CMS |
+   388→   388→| `mosquesBuilt` | Mosques Built / Supported | TBD | ✅ managed in CMS |
+   389→   389→| `wellsDrilled` | Wells Drilled | TBD | ✅ managed in CMS |
+   390→   390→| `scholarshipsAwarded` | Scholarships Awarded | TBD | ✅ managed in CMS |
+   391→   391→| `studentsEnrolled` | Students Enrolled | TBD | ✅ managed in CMS |
+   392→   392→| `radioListeners` | Radio Ihsaan FM Listenership | TBD | ✅ managed in CMS |
+   393→   393→
+   394→   394→---
+   395→   395→
+   396→   396→## Appendix A — Site technical notes (for the build team)
+   397→   397→
+   398→   398→- **Current platform:** WordPress (verified via `wp-json`, RSS feeds, oEmbed endpoints, `index.php/` permalink structure) [VERIFIED]
+   399→   399→- **Current theme/template:** Third-party WordPress theme with significant lorem-ipsum placeholder text still present on individual service sub-pages (e.g., "Brilliant team", "Rich experience", "24/7 online support" blocks) — indicating the current site is **incomplete** [VERIFIED]
+   400→   400→- **Multilingual:** Live site exposes English (default), Kiswahili (`/sw/`), and Arabic (`/ar/`) versions [VERIFIED]
+   401→   401→- **Custom post types:** `schools` (with `school_categories` taxonomy: "Religious Schools", "Environmental Schools") and `majimbo` [VERIFIED — URL slugs `/schools/` and `/majimbo/`]
+   402→   402→- **Bot protection:** The live site sits behind a CDN/WAF (returns HTTP 403 to non-browser User-Agents). The new site should not block legitimate crawlers, but should keep reasonable bot protection.
+   403→   403→- **Vendor credit:** Footer reads "© Ansaar Muslim Youth Centre – 2024. All rights reserved. Crafted by Mamdali Technology" [VERIFIED]
+   404→   404→
+   405→   405→## Appendix B — What to confirm with AMYC before launch
+   406→   406→
+   407→   407→1. **Exact founding date** (day/month in 1980) and **founding leader(s)**.
+   408→   408→2. **Leadership names** for the national committee and each Jimbo.
+   409→   409→3. **Physical address** in Tanga (street, postal/PO Box).
+   410→   410→4. **Correct phone number(s)** — the "+2646620" shown on the live site appears truncated.
+   411→   411→5. **Per-school data**: location, year founded, level (primary/secondary/seminary/college), enrolment, gender.
+   412→   412→6. **Per-Jimbo data**: meeting location, membership size, chairperson, year established.
+   413→   413→7. **Verified statistics**: confirm 1980 / 600 / 50k / 60+ are still accurate.
+   414→   414→8. **Radio Ihsaan FM**: broadcast frequency, coverage area, streaming URL, schedule.
+   415→   415→9. **Social media handles**: Facebook, Instagram, X/Twitter, TikTok, YouTube, Telegram, WhatsApp.
+   416→   416→10. **Document library**: which of the suggested documents in Section 8 already exist and can be published.
+   417→   417→11. **News/editorial workflow**: who will approve news, in which language(s), and on what cadence.
+   418→   418→

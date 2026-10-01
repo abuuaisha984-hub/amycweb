@@ -1,0 +1,17 @@
+import { db } from "@/lib/db"
+import { AdminPageHeader } from "@/components/admin/page-header"
+import { SettingsForm } from "@/components/admin/settings-form"
+
+export default async function AdminSettingsPage() {
+  const rows = await db.siteSetting.findMany()
+  const settings: Record<string, any> = {}
+  for (const s of rows) {
+    try { settings[s.key] = JSON.parse(s.value) } catch { settings[s.key] = s.value }
+  }
+  return (
+    <div>
+      <AdminPageHeader title="Settings" description="Manage institutional information and homepage statistics. Changes apply site-wide immediately." />
+      <SettingsForm initial={JSON.parse(JSON.stringify(settings))} />
+    </div>
+  )
+}
