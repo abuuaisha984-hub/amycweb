@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { localizedField, isLocale, type Locale } from "@/lib/i18n"
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim()
+  const localeParam = req.nextUrl.searchParams.get("locale") || "en"
+  const locale: Locale = isLocale(localeParam) ? localeParam : "en"
   if (!q || q.length < 2) {
     return NextResponse.json({ results: {} })
   }
@@ -40,11 +43,11 @@ export async function GET(req: NextRequest) {
   ])
 
   const results = {
-    page: pages.map((p) => ({ type: "page", title: p.title, href: p.slug === "about" ? "/about" : `/page/${p.slug}`, excerpt: p.excerpt || "" })),
-    article: articles.map((a) => ({ type: "article", title: a.title, href: `/news/${a.slug}`, excerpt: a.excerpt })),
-    school: schools.map((s) => ({ type: "school", title: s.name, href: `/education/${s.slug}`, excerpt: s.region ? `${s.type} · ${s.region}` : s.type })),
-    region: regions.map((r) => ({ type: "region", title: r.name, href: `/regions/${r.slug}`, excerpt: r.englishName || r.overview.slice(0, 80) })),
-    event: events.map((e) => ({ type: "event", title: e.title, href: "/events", excerpt: `${e.venue || ""} ${e.location || ""}`.trim() })),
+    page: pages.map((p) => ({ type: "page", title: localizedField(p, "title", locale, p.title), href: p.slug === "about" ? "/about" : `/info/${p.slug}`, excerpt: localizedField(p, "excerpt", locale, p.excerpt || "") })),
+    article: articles.map((a) => ({ type: "article", title: localizedField(a, "title", locale, a.title), href: `/news/${a.slug}`, excerpt: localizedField(a, "excerpt", locale, a.excerpt) })),
+    school: schools.map((s) => ({ type: "school", title: localizedField(s, "name", locale, s.name), href: `/education/${s.slug}`, excerpt: s.region ? `${s.type} · ${s.region}` : s.type })),
+    region: regions.map((r) => ({ type: "region", title: localizedField(r, "name", locale, r.name), href: `/regions/${r.slug}`, excerpt: r.englishName || r.overview.slice(0, 80) })),
+    event: events.map((e) => ({ type: "event", title: localizedField(e, "title", locale, e.title), href: "/events", excerpt: `${e.venue || ""} ${e.location || ""}`.trim() })),
     document: documents.map((d) => ({ type: "document", title: d.title, href: "/documents", excerpt: `${d.category} · ${d.fileType.toUpperCase()}` })),
   }
 

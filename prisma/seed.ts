@@ -13,18 +13,17 @@ function slug(s: string) {
 async function main() {
   console.log("Seeding AMYC database…")
 
-  // ── Users / RBAC ────────────────────────────────────────────────────────
+  // ── Users / RBAC (simplified to 2 roles) ────────────────────────────────
+  // SUPER_ADMIN — developer / system maintainer (full access including settings & audit)
+  // ADMIN — operator (handles all content: news, documents, schools, regions, events, media)
   const users = [
     { name: "System Administrator", email: "superadmin@amyc.or.tz", role: "SUPER_ADMIN", pw: "Admin@2026" },
-    { name: "Content Editor", email: "content@amyc.or.tz", role: "CONTENT_ADMIN", pw: "Editor@2026" },
-    { name: "Education Officer", email: "education@amyc.or.tz", role: "EDUCATION_ADMIN", pw: "Editor@2026" },
-    { name: "Media Officer", email: "media@amyc.or.tz", role: "MEDIA_ADMIN", pw: "Editor@2026" },
-    { name: "Documents Officer", email: "documents@amyc.or.tz", role: "DOCUMENT_ADMIN", pw: "Editor@2026" },
+    { name: "AMYC Administrator", email: "admin@amyc.or.tz", role: "ADMIN", pw: "Admin@2026" },
   ]
   for (const u of users) {
     await db.user.upsert({
       where: { email: u.email },
-      update: {},
+      update: { role: u.role, name: u.name, passwordHash: hashPassword(u.pw), status: "ACTIVE" },
       create: {
         name: u.name,
         email: u.email,
@@ -34,7 +33,11 @@ async function main() {
       },
     })
   }
-  console.log(`  ✓ ${users.length} admin users`)
+  // Deactivate old role-based accounts (content/education/media/documents officers)
+  for (const email of ["content@amyc.or.tz", "education@amyc.or.tz", "media@amyc.or.tz", "documents@amyc.or.tz"]) {
+    await db.user.updateMany({ where: { email }, data: { status: "SUSPENDED" } }).catch(() => {})
+  }
+  console.log(`  ✓ ${users.length} active admin users (2 roles: SUPER_ADMIN + ADMIN)`)
 
   // ── Categories ──────────────────────────────────────────────────────────
   const categories = [
@@ -188,10 +191,49 @@ async function main() {
       sortOrder: 9,
     },
   ]
-  for (const p of programmes) {
-    await db.programme.upsert({ where: { slug: p.slug }, update: p, create: p })
+  const programmeTranslations: Record<string, any> = {
+    dawah: {
+      sw: { name: "Juhudi za Da'wah", shortDescription: "Madarasa, mihadhara na matukio ya jamii yanayoshiriki ujumbe wa Kiislamu kulingana na Qur'an na Sunnah." },
+      ar: { name: "جهود الدعوة", shortDescription: "فصول ومحاضرات وفعاليات مجتمعية تنشر رسالة الإسلام وفق القرآن والسنة." },
+    },
+    education: {
+      sw: { name: "Elimu", shortDescription: "Zaidi ya shule 25 kote Tanzania — seminari za Kiislamu (Maahad) na shule za kidunia, kutoka chekechea hadi chuo kikuu." },
+      ar: { name: "التعليم", shortDescription: "أكثر من 25 مدرسة في جميع أنحاء تنزانيا — معاهد إسلامية ومدارس عامة، من الروضة إلى الجامعة." },
+    },
+    "social-welfare": {
+      sw: { name: "Ustawi wa Kijamii", shortDescription: "Huduma za ndoa, mazishi, ugawanyaji wa zakat na sadaqah, na misaada ya dharura." },
+      ar: { name: "الرعاية الاجتماعية", shortDescription: "خدمات الزواج والجنائز وتوزيع الزكاة والصدقة والإغاثة الطارئة." },
+    },
+    "community-services": {
+      sw: { name: "Huduma za Jamii", shortDescription: "Kuchimba visima, ujenzi wa misikiti na miundombinu ya jamii inayoshughulikia mahitaji ya kila siku." },
+      ar: { name: "خدمات المجتمع", shortDescription: "حفر الآبار وبناء المساجد والبنية التحتية المجتمعية التي تلبي الاحتياجات اليومية." },
+    },
+    healthcare: {
+      sw: { name: "Afya", shortDescription: "Zahanati zinazofanya kazi kulingana na mafunzo ya Kiislamu, zikiunganisha afya ya mwili na maadili ya Kiislamu." },
+      ar: { name: "الرعاية الصحية", shortDescription: "عيادات تعمل وفق المبادئ الإسلامية، تدمج الصحة الجسدية والقيم الإسلامية." },
+    },
+    "youth-development": {
+      sw: { name: "Maendeleo ya Vijana", shortDescription: "Mafunzo ya uongozi, ushauri, stadi za kazi na malezi ya Kiislamu kwa vijana Waislamu." },
+      ar: { name: "تنمية الشباب", shortDescription: "تدريب على القيادة والإرشاد والمهارات وبناء الشخصية الإسلامية للشباب المسلم." },
+    },
+    "development-projects": {
+      sw: { name: "Miradi ya Maendeleo", shortDescription: "Maji na usafi, taasisi za elimu, ujenzi wa misikiti na uhifadhi wa mazingira." },
+      ar: { name: "مشاريع التنمية", shortDescription: "المياه والصرف الصحي والمنشآت التعليمية وبناء المساجد وحماية البيئة." },
+    },
+    "media-communication": {
+      sw: { name: "Media na Mawasiliano", shortDescription: "Redio Ihsaan FM na majukwaa ya mtandaoni kwa mihadhara, habari, elimu na matangazo." },
+      ar: { name: "الإعلام والاتصال", shortDescription: "إذاعة إحسان إف ومنصات عبر الإنترنت للمحاضرات والأخبار والتعليم والإعلانات." },
+    },
+    "orphan-welfare": {
+      sw: { name: "Ustawi wa Mayatima", shortDescription: "Kuangalia zaidi ya mayatima 600 kwa makazi, chakula, elimu, afya na malezi ya Kiislamu." },
+      ar: { name: "رعاية الأيتام", shortDescription: "رعاية أكثر من 600 يتيم بالمأوى والطعام والتعليم والرعاية الصحية والتربية الإسلامية." },
+    },
   }
-  console.log(`  ✓ ${programmes.length} programmes`)
+  for (const p of programmes) {
+    const withTr = { ...p, translations: JSON.stringify(programmeTranslations[p.slug] || {}) }
+    await db.programme.upsert({ where: { slug: p.slug }, update: withTr, create: withTr })
+  }
+  console.log(`  ✓ ${programmes.length} programmes (with SW+AR translations)`)
 
   // ── Schools (verified list from amyc.or.tz) ─────────────────────────────
   const maahad = [
@@ -404,6 +446,18 @@ async function main() {
       featured: true,
       publishedAt: past(20),
       featuredImage: "/images/news-zakat.jpg",
+      translations: JSON.stringify({
+        sw: {
+          title: "AMYC Inagawa Zaidi ya Kg 1,350 za Mchele kama Zakatul Fitr",
+          excerpt: "Kituo cha Vijana wa Kiislamu cha Ansaar kimegawa zaidi ya kilo 1,350 za mchele kama Zakatul Fitr kwa familia katika Majimbo yake.",
+          content: "Sehemu ya programu yake ya mwaka ya ustawi, Kituo cha Vijana wa Kiislamu cha Ansaar (AMYC) kimegawa zaidi ya kilo 1,350 za mchele kama Zakatul Fitr kwa familia dhaifu katika mtandao wake wa Majimbo. Uwgawanyi, ulioratibiwa kupitia matawi ya kikanda, ulihakikisha familia zinaweza kusherehekea Eid al-Fitr kwa heshima. Kitengo cha ustawi cha AMYC hufanya kazi mwaka mzima kutambua familia dhaifu na kutoa msaada kwa njia inayoheshimu utamaduni.",
+        },
+        ar: {
+          title: "المركز يوزع أكثر من 1,350 كيلوغرام من الأرز كزكاة الفطر",
+          excerpt: "وزع مركز شباب الأنصار المسلمين أكثر من 1,350 كيلوغرام من الأرز كزكاة الفطر على العائلات في مناطقه.",
+          content: "كجزء من برنامج الرعاية السنوي، وزع مركز شباب الأنصار المسلمين (AMYC) أكثر من 1,350 كيلوغرام من الأرز كزكاة الفطر على الأسر المحتاجة في جميع أنحاء شبكة مناطقه. تم التنسيق للتوزيع عبر الفروع الإقليمية، لضمان قدرة الأسر على الاحتفال بعيد الفطر بكرامة. يعمل ذراع الرعاية في المركز على مدار العام لتحديد الأسر الضعيفة وتقديم الدعم بطريقة تليق بالثقافة.",
+        },
+      }),
     },
     {
       kind: "NEWS",

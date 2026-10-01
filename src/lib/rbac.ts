@@ -2,26 +2,24 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 
-export type Role =
-  | "SUPER_ADMIN"
-  | "CONTENT_ADMIN"
-  | "EDUCATION_ADMIN"
-  | "MEDIA_ADMIN"
-  | "DOCUMENT_ADMIN"
-  | "REGIONAL_EDITOR"
+export type Role = "SUPER_ADMIN" | "ADMIN"
 
 /**
- * Role-Based Access Control matrix.
- * Each role maps to the entities it can manage.
- * SUPER_ADMIN has access to everything.
+ * Role-Based Access Control matrix (simplified to 2 roles).
+ *
+ * SUPER_ADMIN — the developer / system maintainer. Full access including
+ *   user management, settings, audit log, and all content operations.
+ *   Can add features and perform full maintenance.
+ *
+ * ADMIN — the operator. Handles all day-to-day content management:
+ *   news, announcements, documents, schools, regions, events, media,
+ *   gallery, pages, leadership, and contact messages. Essentially
+ *   everything except super-admin-only functions (user management,
+ *   settings, audit log).
  */
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
   SUPER_ADMIN: ["*"],
-  CONTENT_ADMIN: ["article", "event", "page", "gallery", "leader", "contact", "media"],
-  EDUCATION_ADMIN: ["school", "leader", "article"],
-  MEDIA_ADMIN: ["media", "gallery", "article"],
-  DOCUMENT_ADMIN: ["document"],
-  REGIONAL_EDITOR: ["article", "event"],
+  ADMIN: ["article", "event", "page", "gallery", "leader", "contact", "media", "school", "region", "document", "programme"],
 }
 
 export function can(role: string | undefined, entity: string): boolean {
@@ -29,6 +27,11 @@ export function can(role: string | undefined, entity: string): boolean {
   const perms = ROLE_PERMISSIONS[role as Role]
   if (!perms) return false
   return perms.includes("*") || perms.includes(entity)
+}
+
+/** Super-admin-only functions (user management, settings, audit). */
+export function isSuperAdmin(role: string | undefined): boolean {
+  return role === "SUPER_ADMIN"
 }
 
 export async function getSession() {
@@ -42,6 +45,18 @@ export async function requireRole(entity: string) {
   }
   if (!can(session.user.role, entity)) {
     return { ok: false as const, status: 403, message: "Forbidden" }
+  }
+  return { ok: true as const, session }
+}
+
+/** Require super admin for sensitive operations. */
+export async function requireSuperAdmin() {
+  const session = await getSession()
+  if (!session?.user) {
+    return { ok: false as const, status: 401, message: "Unauthorized" }
+  }
+  if (!isSuperAdmin(session.user.role)) {
+    return { ok: false as const, status: 403, message: "Forbidden — Super Admin only" }
   }
   return { ok: true as const, session }
 }

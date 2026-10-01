@@ -24,6 +24,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if ("featured" in body) data.featured = !!body.featured
   if ("publishedAt" in body) data.publishedAt = body.publishedAt ? new Date(body.publishedAt) : null
   if ("expiresAt" in body) data.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null
+  if ("translations" in body) {
+    data.translations = typeof body.translations === "string" ? body.translations : JSON.stringify(body.translations || {})
+  }
   if (body.title && body.title !== existing.title) {
     let s = slugify(body.slug || body.title)
     const clash = await db.article.findUnique({ where: { slug: s } })

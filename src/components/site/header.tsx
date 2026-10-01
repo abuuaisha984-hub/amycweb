@@ -4,9 +4,10 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { AmycLogo } from "@/components/site/logo"
-import { NAV } from "@/components/site/nav-config"
+import { NAV, lp } from "@/components/site/nav-config"
 import { LanguageSwitcher } from "@/components/site/lang-switcher"
 import { SearchDialog } from "@/components/site/search-dialog"
+import { useLanguage } from "@/components/providers"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import {
@@ -27,6 +28,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+  const { locale, t } = useLanguage()
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -58,13 +60,13 @@ export function SiteHeader() {
               <Mail className="h-3.5 w-3.5" /> info@amyc.or.tz
             </a>
             <span className="inline-flex items-center gap-1.5 opacity-90">
-              <Phone className="h-3.5 w-3.5" /> Mon–Fri: 10:00 AM – 8:00 PM
+              <Phone className="h-3.5 w-3.5" /> {t("contact.officeHours")}
             </span>
           </div>
           <div className="flex items-center gap-3">
             <span className="opacity-80">Tanga, Tanzania</span>
             <span className="h-3 w-px bg-primary-foreground/20" />
-            <Link href="/admin" className="opacity-90 transition hover:opacity-100">Admin</Link>
+            <Link href="/admin" className="opacity-90 transition hover:opacity-100">{t("nav.admin")}</Link>
           </div>
         </div>
       </div>
@@ -77,7 +79,7 @@ export function SiteHeader() {
         )}
       >
         <div className="container-institutional flex h-16 items-center justify-between gap-4 lg:h-[4.5rem]">
-          <Link href="/" className="shrink-0" aria-label="AMYC home">
+          <Link href={lp(locale, "/")} className="shrink-0" aria-label="AMYC home">
             <AmycLogo />
           </Link>
 
@@ -86,26 +88,26 @@ export function SiteHeader() {
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
                 {NAV.map((item) => (
-                  <NavigationMenuItem key={item.label}>
+                  <NavigationMenuItem key={item.labelKey}>
                     {item.children ? (
                       <>
                         <NavigationMenuTrigger className="h-9 bg-transparent px-3 text-sm font-medium data-[state=open]:bg-accent/40">
-                          {item.label}
+                          {t(item.labelKey)}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
                           <div className="grid w-[34rem] gap-1 p-3 md:w-[40rem] md:grid-cols-2">
                             {item.children.map((child) => (
                               <Link
                                 key={child.href}
-                                href={child.href}
+                                href={lp(locale, child.href)}
                                 className="group block rounded-md p-3 transition hover:bg-accent/40"
                               >
                                 <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                                  {child.label}
-                                  <ChevronRight className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-60" />
+                                  {t(child.labelKey)}
+                                  <ChevronRight className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-60 rtl:rotate-180" />
                                 </div>
-                                {child.description && (
-                                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{child.description}</p>
+                                {child.descriptionKey && (
+                                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{t(child.descriptionKey)}</p>
                                 )}
                               </Link>
                             ))}
@@ -114,7 +116,7 @@ export function SiteHeader() {
                       </>
                     ) : (
                       <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "h-9 bg-transparent px-3 text-sm font-medium")}>
-                        <Link href={item.href}>{item.label}</Link>
+                        <Link href={lp(locale, item.href)}>{t(item.labelKey)}</Link>
                       </NavigationMenuLink>
                     )}
                   </NavigationMenuItem>
@@ -124,8 +126,8 @@ export function SiteHeader() {
           ) : (
             <nav className="hidden lg:flex" aria-label="Main">
               {NAV.map((item) => (
-                <Link key={item.label} href={item.href} className="px-3 text-sm font-medium text-foreground/70">
-                  {item.label}
+                <Link key={item.labelKey} href={lp(locale, item.href)} className="px-3 text-sm font-medium text-foreground/70">
+                  {t(item.labelKey)}
                 </Link>
               ))}
             </nav>
@@ -137,13 +139,13 @@ export function SiteHeader() {
               size="icon"
               className="h-9 w-9"
               onClick={() => setSearchOpen(true)}
-              aria-label="Search"
+              aria-label={t("search.title")}
             >
               <Search className="h-4.5 w-4.5" />
             </Button>
             {mounted && <LanguageSwitcher />}
             <Button asChild size="sm" className="hidden h-9 bg-primary px-4 text-sm font-semibold sm:inline-flex">
-              <Link href="/contact">Contact</Link>
+              <Link href={lp(locale, "/contact")}>{t("nav.contact")}</Link>
             </Button>
 
             {/* Mobile menu — deferred to client to avoid Radix useId hydration mismatch */}
@@ -164,25 +166,25 @@ export function SiteHeader() {
                   </div>
                   <nav className="px-2 py-3">
                     {NAV.map((item) => (
-                      <div key={item.label} className="border-b last:border-0">
+                      <div key={item.labelKey} className="border-b last:border-0">
                         <Link
-                          href={item.href}
+                          href={lp(locale, item.href)}
                           onClick={() => setMobileOpen(false)}
                           className="flex items-center justify-between px-3 py-3 text-sm font-semibold text-foreground"
                         >
-                          {item.label}
-                          {item.children && <ChevronRight className="h-4 w-4 opacity-40" />}
+                          {t(item.labelKey)}
+                          {item.children && <ChevronRight className="h-4 w-4 opacity-40 rtl:rotate-180" />}
                         </Link>
                         {item.children && (
                           <div className="pb-2">
                             {item.children.map((c) => (
                               <Link
                                 key={c.href}
-                                href={c.href}
+                                href={lp(locale, c.href)}
                                 onClick={() => setMobileOpen(false)}
                                 className="block px-6 py-2 text-[0.82rem] text-muted-foreground transition hover:text-primary"
                               >
-                                {c.label}
+                                {t(c.labelKey)}
                               </Link>
                             ))}
                           </div>
@@ -191,10 +193,10 @@ export function SiteHeader() {
                     ))}
                     <div className="mt-4 flex flex-col gap-2 px-3">
                       <Button asChild className="bg-primary" onClick={() => setMobileOpen(false)}>
-                        <Link href="/contact">Contact AMYC</Link>
+                        <Link href={lp(locale, "/contact")}>{t("cta.contact")}</Link>
                       </Button>
                       <Button asChild variant="outline" onClick={() => setMobileOpen(false)}>
-                        <Link href="/admin">Admin Login</Link>
+                        <Link href="/admin">{t("nav.admin")} Login</Link>
                       </Button>
                     </div>
                   </nav>

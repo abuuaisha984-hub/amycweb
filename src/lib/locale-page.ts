@@ -1,0 +1,21 @@
+import { db } from "@/lib/db"
+import { localizedField, ui, formatDate, type Locale } from "@/lib/i18n"
+
+/**
+ * Load site settings as a parsed object.
+ */
+export async function getSettings(): Promise<Record<string, any>> {
+  const rows = await db.siteSetting.findMany()
+  const map: Record<string, any> = {}
+  for (const s of rows) {
+    try {
+      map[s.key] = JSON.parse(s.value)
+    } catch {
+      map[s.key] = s.value
+    }
+  }
+  return map
+}
+
+export { localizedField, ui, formatDate }
+export type { Locale }

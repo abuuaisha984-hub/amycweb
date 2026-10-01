@@ -74,9 +74,9 @@ export default function AdminLoginPage() {
               </Button>
             </form>
             <div className="mt-6 rounded-lg bg-secondary/60 p-3 text-xs text-muted-foreground">
-              <p className="font-semibold text-foreground">Demo credentials</p>
-              <p className="mt-1">Super Admin: superadmin@amyc.or.tz / Admin@2026</p>
-              <p>Content Editor: content@amyc.or.tz / Editor@2026</p>
+              <p className="font-semibold text-foreground">Access credentials</p>
+              <p className="mt-1">System Admin: superadmin@amyc.or.tz / Admin@2026</p>
+              <p>Administrator: admin@amyc.or.tz / Admin@2026</p>
             </div>
             <div className="mt-4 text-center">
               <Link href="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">

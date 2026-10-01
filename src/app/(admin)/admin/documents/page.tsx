@@ -8,13 +8,13 @@ import { Lock } from "lucide-react"
 
 export default async function AdminDocumentsPage() {
   const session = await getServerSession(authOptions)
-  if (!can(session?.user?.role, "document") && session?.user?.role !== "SUPER_ADMIN") {
+  if (!can(session?.user?.role, "document")) {
     return (
       <div>
         <AdminPageHeader title="Documents" description="You do not have permission to manage documents." />
         <Card><CardContent className="flex flex-col items-center justify-center py-16 text-center">
           <Lock className="mb-3 h-10 w-10 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">This module requires Document Administrator or Super Admin privileges.</p>
+          <p className="text-sm text-muted-foreground">This module requires Administrator privileges.</p>
         </CardContent></Card>
       </div>
     )

@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
   const {
     title, excerpt, content, kind = "NEWS", category, author, status = "DRAFT",
     featured = false, publishedAt, expiresAt, featuredImage, imageCredit, scope = "HQ",
+    translations,
   } = body
 
   if (!title || !excerpt || !content) {
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
       imageCredit: imageCredit || null,
       publishedAt: publishedAt ? new Date(publishedAt) : (status === "PUBLISHED" ? new Date() : null),
       expiresAt: expiresAt ? new Date(expiresAt) : null,
+      translations: typeof translations === "string" ? translations : JSON.stringify(translations || {}),
     },
   })
   await writeAudit({

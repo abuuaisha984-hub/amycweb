@@ -61,3 +61,79 @@ Work Log:
 
 Stage Summary:
 - Hydration mismatch resolved. Lint clean. All header interactivity preserved.
+
+---
+Task ID: m-pages
+Agent: localize-pages-agent
+Task: Localize all remaining public pages for EN/SW/AR
+
+Work Log:
+- Read reference homepage at /home/z/my-project/src/app/(public)/[locale]/page.tsx and supporting files (page-hero.tsx, locale-page.ts, nav-config.ts, schools-directory.tsx, regions-directory.tsx, layout.tsx) to learn the established localization pattern.
+- Audited UI_STRINGS in /home/z/my-project/src/lib/i18n.ts and identified ~28 missing keys needed by the 14 target pages. Added a block of new keys to all three locale sections (en/sw/ar):
+  * common.home, news.none, news.article, documents.none, legal.eyebrow, programmes.detailEyebrow
+  * about.historyTitle, about.note, about.noteDesc, about.overview.p1a/b/c, about.overview.p2a/b, about.overview.p3
+  * about.value.{awareness,quality,wisdom,adherence,trustworthiness,collaboration}.{name,desc} (12 keys)
+  * school.institution, school.region, school.district, school.ward, school.address, school.status
+  * region.englishLabel, region.leadershipNote, region.contactNote
+  * contact.dept.{dawah,welfare,partnerships}
+- Localized all 14 pages under /home/z/my-project/src/app/(public)/[locale]/:
+  1. about/page.tsx — params: Promise<{locale}>, locale cast, t(), lp() links (incl. /regions, /programmes/[slug]), localizedField for programme.name, breadcrumbs localized, About-Overview paragraphs translated via 7 keys, 6 values translated via 12 keys, structure/leadership features wired to existing keys (about.branches, about.branchesDesc, about.regionsMajimbo, about.regionsDesc, about.electoral, about.electoralDesc), common.nameTBD for leader placeholders.
+  2. programmes/page.tsx — localized eyebrow (home.whatWeDo.title), title (programmes.title), desc (programmes.desc), localizedField for programme.name/shortDescription, common.learnMore, ArrowRight gets rtl:rotate-180, lp() for /programmes/[slug].
+  3. programmes/[slug]/page.tsx — Promise<{slug, locale}>, programmes.detailEyebrow, localizedField for name/shortDescription/description, related programmes use localizedField(o,"name"), cta.getInvolved/cta.news/cta.contact/programmes.aboutProgramme/programmes.relatedProgrammes/programmes.supportTitle/programmes.supportDesc, all internal links via lp(), ArrowRight rtl:rotate-180.
+  4. education/page.tsx — education.title/desc, home.education.eyebrow, education.maahad/secondary/primary/college for counts, SchoolsDirectory receives locale prop AND schools array mapped with localizedField(name, about).
+  5. education/[slug]/page.tsx — Promise<{slug, locale}>, TYPE_LABEL via t("education.*"), localizedField for name/about/history/category, school.* keys for all sidebar labels (region/district/ward/address/status/verification/source/viewSource), school.facilityNote/school.locationNote/common.toBeVerified/common.infoUnavailable/common.visitSchoolWebsite/school.backToAll, ArrowLeft with rtl:rotate-180, all mr-1/mr-1.5 converted to me-, text-right → text-end, ml-4 → ms-4.
+  6. regions/page.tsx — home.regions.eyebrow, regions.title, regions.desc (no {n} interpolation; matches homepage pattern), RegionsDirectory receives locale prop + regions mapped with localizedField(name, overview).
+  7. regions/[slug]/page.tsx — Promise<{slug, locale}>, region.jimbo/overview/history/activities/branches/leadership/contact/backToAll, region.englishLabel/leadershipNote/contactNote, localizedField for name/overview/history, common.visitRegionalWebsite, ArrowLeft rtl:rotate-180, mr-1 → me-1.
+  8. news/page.tsx — Promise<{locale} + searchParams>, home.news.eyebrow, news.title/desc/all/news/announcements/featured, common.readFullStory, news.none for empty state, formatDate(date, locale), localizedField for title/excerpt, filter tab links via lp(locale, "/news") and lp(locale, "/news?kind=..."), ArrowRight rtl:rotate-180, absolute-positioned badges converted to start-4/end-3 with rtl overrides.
+  9. news/[slug]/page.tsx — Promise<{slug, locale}>, news.announcements/news for eyebrow, localizedField for title/excerpt/content (markdown parsing logic preserved), news.archived/news.related/news.backToAll, news.article fallback for breadcrumb, formatDate with {day, month: long, year}, ArrowLeft rtl:rotate-180, bottom-2 right-2 → bottom-2 end-2 with rtl override, ml-4 → ms-4.
+  10. events/page.tsx — Promise<{locale}>, home.events.eyebrow, events.title/desc/upcoming/past/pastBadge/register/none, localizedField for e.title/e.description, formatDate(e.startDate, locale, {month: short}) for the day-box, formatDate(..., {day: numeric, month: long, year: numeric}) for past events, ArrowRight rtl:rotate-180.
+  11. documents/page.tsx — Promise<{locale} + searchParams>, home.docs.eyebrow, documents.title/desc/none, common.all/common.download, formatDate(d.publishedAt, locale), category-filter links via lp(locale, "/documents") and lp(locale, "/documents?category=..."). NOTE: Document model has no translations field per Prisma schema, so d.title/d.description left as direct field access (matches homepage pattern).
+  12. media/page.tsx — home.gallery.eyebrow, media.title/desc, localizedField NOT used (Gallery model has no translations field; matches homepage pattern).
+  13. contact/page.tsx — Promise<{locale}>, nav.contact for hero eyebrow, contact.title/desc/sendMessage/loveHear/formDesc/contactDetails/address/officeHours/departmentEmails/departmentNote/phone, about.email/about.radio for label rows, nav.education/nav.media/contact.general/contact.dept.{dawah,welfare,partnerships} for department labels, lp() for breadcrumb.
+  14. info/[slug]/page.tsx — Promise<{slug, locale}>, legal.eyebrow, localizedField(page, "title"/"excerpt"/"content", locale, fallback), markdown-like ## / ### / - / 1. parsing logic preserved on localized content string, lp() for breadcrumb.
+- Fixed pre-existing lint regression in /home/z/my-project/src/components/providers.tsx introduced by the URL-locale refactor: re-added eslint-disable-next-line react-hooks/set-state-in-effect for the legitimate pathname-driven setState in LanguageProvider's useEffect (matches the previous pattern noted in worklog entry for Task ID 13).
+- TypeScript errors encountered & fixed: documents/page.tsx and media/page.tsx initially used localizedField() on Document/Gallery which lack a translations field, causing TS2559/TS2345 type errors. Reverted those to direct field access (consistent with the homepage's existing pattern for these two models).
+- Ran `bun run lint` — clean (no errors, no warnings).
+- Ran `bunx tsc --noEmit` (excluding examples/ and skills/ which have pre-existing unrelated errors) — clean.
+- Smoke-tested all 14 routes via curl against the dev server across EN/SW/AR locales — all returned HTTP 200. Spot-checked rendered HTML for:
+  * About page contains "Ansaar Muslim Youth Centre" (EN), "Kituo cha Vijana" (SW), "مركز شباب الأنصار" (AR).
+  * Breadcrumbs show "Home"/"Nyumbani"/"الرئيسية" and nav labels in respective language.
+  * EN dir="ltr" / AR dir="rtl" correctly applied by layout.
+  * News/Region detail pages have all internal links prefixed with /en/ (locale-prefixed).
+
+Stage Summary:
+- All 14 remaining public pages now follow the same localization pattern as the homepage: Promise<{locale}> (or Promise<{slug, locale}> for [slug] pages), locale-extraction + Locale cast, ui() helper for every visible string, lp() for every internal link, localizedField() for every content field on translated models (Programme, School, Region, Article, Event, Page), and formatDate() for all dates.
+- 28 new UI keys (×3 locales = 84 new lines) added to /home/z/my-project/src/lib/i18n.ts for narrative content (about-overview paragraphs, values list) and miscellaneous labels (school region/district/ward, region.englishLabel, contact.dept.*, news.none/documents.none, common.home, legal.eyebrow, programmes.detailEyebrow, about.historyTitle/about.note/Desc).
+- Logical-property Tailwind classes (ms/me/ps/pe/start/end/text-end) replace physical (ml/mr/pl/pr/left/right/text-right) throughout the edited files; ArrowRight/ArrowLeft icons use rtl:rotate-180.
+- Lint clean. TypeScript clean. All routes return 200 in EN/SW/AR.
+- Files edited (16 total): src/lib/i18n.ts, src/components/providers.tsx (lint fix only), and 14 page files under src/app/(public)/[locale]/ (about, programmes, programmes/[slug], education, education/[slug], regions, regions/[slug], news, news/[slug], events, documents, media, contact, info/[slug]).
+
+---
+Task ID: m1-m9
+Agent: main-builder (Z.ai Code)
+Task: Full trilingual (EN/SW/AR) multilingual system with URL-based routing, RTL, CMS translation tabs, and admin role simplification.
+
+Work Log:
+- Restructured public routes under [locale] segment: /en/, /sw/, /ar/ with generateStaticParams, root redirect to saved/default locale.
+- Rewrote i18n library: 200+ UI string keys × 3 locales, localizedField() helper, hasTranslation(), formatDate() with locale-aware Intl, buildAlternates() for hreflang.
+- Updated LanguageProvider to read locale from URL pathname (not cookie); language switcher navigates to locale-prefixed URL.
+- Created professional language switcher (EN | SW | ع pill buttons).
+- Updated header, footer, search dialog, regions directory, schools directory to use locale-prefixed links (lp()) and translated UI strings.
+- Localized homepage with all storytelling sections (hero, stats, who-we-are, programmes, education, regions, news, events, documents, gallery, CTA).
+- Delegated localization of 14 remaining public pages to subagent (about, programmes list+detail, education list+detail, regions list+detail, news list+detail, events, documents, media, contact, info/[slug]).
+- Added Swahili + Arabic translations to seed data: all 9 programmes (name + shortDescription), first news article (title + excerpt + content).
+- Added language tabs (EN/SW/AR) to News admin editor with TranslationTabs component; translations stored in JSON field; SW/AR status columns in article list.
+- Created Translation Status admin page: matrix of all content × 3 languages with summary cards and progress bars.
+- Simplified admin RBAC from 6 roles to 2: SUPER_ADMIN (developer/maintainer) + ADMIN (operator — all content). Updated seed, nav, shell, permission checks.
+- Full RTL CSS for Arabic: font-family, text-align, icon flipping, dropdown direction, table alignment, form inputs, navigation content.
+- SEO: per-locale metadata, hreflang alternates (en/sw/ar/x-default), canonical URLs, Open Graph locale.
+- Updated search API to accept locale param and return localized titles.
+
+Stage Summary:
+- URL-based trilingual routing: /en/, /sw/, /ar/ — all 32 routes return 200.
+- Language switcher navigates between locale URLs; selection persisted in cookie.
+- Arabic has full RTL layout (dir="rtl", lang="ar", flipped icons, right-aligned content).
+- CMS News editor has EN/SW/AR tabs for title/excerpt/content; translation status visible in list.
+- Translation Status admin page shows completion matrix with progress bars.
+- Admin simplified to 2 accounts: superadmin@amyc.or.tz (System Admin) + admin@amyc.or.tz (Administrator), both / Admin@2026.
+- Lint clean. No hydration errors. All interactivity preserved.

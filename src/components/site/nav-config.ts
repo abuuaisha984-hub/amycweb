@@ -1,94 +1,103 @@
-export type NavChild = { label: string; href: string; description?: string }
-export type NavItem = { label: string; href: string; children?: NavChild[] }
+import type { Locale } from "@/lib/i18n"
 
+/** Prefix a path with the locale segment. */
+export function lp(locale: Locale, path: string): string {
+  if (!path || path === "/") return `/${locale}`
+  return `/${locale}${path.startsWith("/") ? path : "/" + path}`
+}
+
+export type NavChild = { labelKey: string; href: string; descriptionKey?: string; label?: string; description?: string }
+export type NavItem = { labelKey: string; href: string; children?: NavChild[] }
+
+// hrefs here are locale-agnostic; the header/footer will prefix them via lp(locale, href)
 export const NAV: NavItem[] = [
   {
-    label: "About",
+    labelKey: "nav.about",
     href: "/about",
     children: [
-      { label: "Overview", href: "/about", description: "Who AMYC is and what we stand for" },
-      { label: "History", href: "/about#history", description: "More than four decades of service since 1980" },
-      { label: "Mission & Vision", href: "/about#mission", description: "Our direction and aspiration" },
-      { label: "Values", href: "/about#values", description: "The principles that guide our work" },
-      { label: "Leadership", href: "/about#leadership", description: "Our national governance structure" },
-      { label: "Organizational Structure", href: "/about#structure", description: "Branches, regions and electoral system" },
+      { labelKey: "about.overview", href: "/about", descriptionKey: "home.whoWeAre.eyebrow" },
+      { labelKey: "about.history", href: "/about#history", descriptionKey: "about.history" },
+      { labelKey: "about.mission", href: "/about#mission", descriptionKey: "about.mission" },
+      { labelKey: "about.values", href: "/about#values", descriptionKey: "about.valuesTitle" },
+      { labelKey: "about.leadership", href: "/about#leadership", descriptionKey: "about.leadershipTitle" },
+      { labelKey: "about.structure", href: "/about#structure", descriptionKey: "about.structureTitle" },
     ],
   },
   {
-    label: "Programmes",
+    labelKey: "nav.programmes",
     href: "/programmes",
     children: [
-      { label: "Da'wah Efforts", href: "/programmes/dawah" },
-      { label: "Education", href: "/programmes/education" },
-      { label: "Social Welfare", href: "/programmes/social-welfare" },
-      { label: "Community Services", href: "/programmes/community-services" },
-      { label: "Healthcare", href: "/programmes/healthcare" },
-      { label: "Youth Development", href: "/programmes/youth-development" },
-      { label: "Development Projects", href: "/programmes/development-projects" },
-      { label: "Media & Communication", href: "/programmes/media-communication" },
-      { label: "Orphan Welfare", href: "/programmes/orphan-welfare" },
+      { labelKey: "prog.dawah", href: "/programmes/dawah" },
+      { labelKey: "prog.education", href: "/programmes/education" },
+      { labelKey: "prog.social-welfare", href: "/programmes/social-welfare" },
+      { labelKey: "prog.community-services", href: "/programmes/community-services" },
+      { labelKey: "prog.healthcare", href: "/programmes/healthcare" },
+      { labelKey: "prog.youth-development", href: "/programmes/youth-development" },
+      { labelKey: "prog.development-projects", href: "/programmes/development-projects" },
+      { labelKey: "prog.media-communication", href: "/programmes/media-communication" },
+      { labelKey: "prog.orphan-welfare", href: "/programmes/orphan-welfare" },
     ],
   },
   {
-    label: "Education",
+    labelKey: "nav.education",
     href: "/education",
     children: [
-      { label: "Schools Directory", href: "/education", description: "Browse all AMYC schools and institutions" },
-      { label: "Religious Schools (Maahad)", href: "/education?type=MAAHAD" },
-      { label: "Secondary Schools", href: "/education?type=SECONDARY" },
-      { label: "Primary Schools", href: "/education?type=PRIMARY" },
-      { label: "Teachers College", href: "/education?type=COLLEGE" },
+      { labelKey: "education.title", href: "/education", descriptionKey: "education.desc" },
+      { labelKey: "education.maahad", href: "/education?type=MAAHAD" },
+      { labelKey: "education.secondary", href: "/education?type=SECONDARY" },
+      { labelKey: "education.primary", href: "/education?type=PRIMARY" },
+      { labelKey: "education.college", href: "/education?type=COLLEGE" },
     ],
   },
   {
-    label: "Regions",
+    labelKey: "nav.regions",
     href: "/regions",
     children: [
-      { label: "All Majimbo", href: "/regions", description: "Our nationwide network of regional branches" },
+      { labelKey: "regions.title", href: "/regions", descriptionKey: "regions.desc" },
     ],
   },
   {
-    label: "Media",
+    labelKey: "nav.media",
     href: "/media",
     children: [
-      { label: "News", href: "/news" },
-      { label: "Announcements", href: "/news?kind=ANNOUNCEMENT" },
-      { label: "Events", href: "/events" },
-      { label: "Gallery", href: "/media" },
-      { label: "Publications", href: "/documents?category=Publication" },
+      { labelKey: "news.title", href: "/news" },
+      { labelKey: "news.announcements", href: "/news?kind=ANNOUNCEMENT" },
+      { labelKey: "events.title", href: "/events" },
+      { labelKey: "media.title", href: "/media" },
+      { labelKey: "documents.title", href: "/documents?category=Publication" },
     ],
   },
   {
-    label: "Resources",
+    labelKey: "nav.resources",
     href: "/documents",
     children: [
-      { label: "Documents & Downloads", href: "/documents", description: "Reports, policies, forms and publications" },
-      { label: "Annual Reports", href: "/documents?category=Annual Report" },
-      { label: "Strategic Plans", href: "/documents?category=Strategic Plan" },
-      { label: "Policies", href: "/documents?category=Policy" },
-      { label: "Forms", href: "/documents?category=Form" },
+      { labelKey: "documents.title", href: "/documents", descriptionKey: "documents.desc" },
+      { labelKey: "doc.annual-report", href: "/documents?category=Annual Report" },
+      { labelKey: "doc.strategic-plan", href: "/documents?category=Strategic Plan" },
+      { labelKey: "doc.policy", href: "/documents?category=Policy" },
+      { labelKey: "doc.form", href: "/documents?category=Form" },
     ],
   },
   {
-    label: "Contact",
+    labelKey: "nav.contact",
     href: "/contact",
   },
 ]
 
 export const FOOTER_QUICK = [
-  { label: "About", href: "/about" },
-  { label: "Programmes", href: "/programmes" },
-  { label: "Schools", href: "/education" },
-  { label: "Regions", href: "/regions" },
-  { label: "News", href: "/news" },
-  { label: "Events", href: "/events" },
-  { label: "Documents", href: "/documents" },
-  { label: "Contact", href: "/contact" },
+  { labelKey: "nav.about", href: "/about" },
+  { labelKey: "nav.programmes", href: "/programmes" },
+  { labelKey: "nav.education", href: "/education" },
+  { labelKey: "nav.regions", href: "/regions" },
+  { labelKey: "news.title", href: "/news" },
+  { labelKey: "events.title", href: "/events" },
+  { labelKey: "documents.title", href: "/documents" },
+  { labelKey: "nav.contact", href: "/contact" },
 ]
 
 export const FOOTER_LEGAL = [
-  { label: "Privacy Policy", href: "/page/privacy-policy" },
-  { label: "Terms of Use", href: "/page/terms" },
-  { label: "Cookie Policy", href: "/page/cookie-policy" },
-  { label: "Accessibility", href: "/page/accessibility" },
+  { labelKey: "legal.privacy", href: "/info/privacy-policy" },
+  { labelKey: "legal.terms", href: "/info/terms" },
+  { labelKey: "legal.cookie", href: "/info/cookie-policy" },
+  { labelKey: "legal.accessibility", href: "/info/accessibility" },
 ]

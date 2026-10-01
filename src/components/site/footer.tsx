@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { AmycLogo } from "@/components/site/logo"
-import { FOOTER_QUICK, FOOTER_LEGAL } from "@/components/site/nav-config"
+import { FOOTER_QUICK, FOOTER_LEGAL, lp } from "@/components/site/nav-config"
 import { db } from "@/lib/db"
+import { ui, type Locale } from "@/lib/i18n"
 import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react"
 
 async function getFooterData() {
@@ -30,7 +31,7 @@ const SOCIAL_ICONS: Record<string, string> = {
   MessageCircle: "M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.652V24l4.088-2.242c1.092.301 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111C24 4.974 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.733 8l3.131 3.26L19.752 8l-6.561 6.963z",
 }
 
-export async function SiteFooter() {
+export async function SiteFooter({ locale }: { locale: Locale }) {
   const { socials, settings } = await getFooterData()
   const orgName = settings.orgName || "Ansaar Muslim Youth Centre"
   const tagline = settings.tagline || ""
@@ -48,9 +49,7 @@ export async function SiteFooter() {
             <div className="rounded-lg bg-primary-foreground/5 p-1 ring-1 ring-primary-foreground/10">
               <AmycLogo className="px-2 py-1.5 [&_span]:text-primary-foreground [&_.text-muted-foreground]:text-primary-foreground/60" />
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/75">
-              {tagline}
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/75">{tagline}</p>
             <div className="mt-5 flex flex-wrap gap-2">
               {socials.map((s) => {
                 const path = SOCIAL_ICONS[s.icon || s.platform] || SOCIAL_ICONS.MessageCircle
@@ -72,13 +71,13 @@ export async function SiteFooter() {
 
           {/* Quick links */}
           <div>
-            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">Quick Links</h3>
+            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">{ui(locale, "footer.quickLinks")}</h3>
             <ul className="mt-4 space-y-2.5">
               {FOOTER_QUICK.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="group inline-flex items-center gap-1 text-sm text-primary-foreground/80 transition hover:text-primary-foreground">
-                    <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
-                    {l.label}
+                  <Link href={lp(locale, l.href)} className="group inline-flex items-center gap-1 text-sm text-primary-foreground/80 transition hover:text-primary-foreground">
+                    <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100 rtl:rotate-180" />
+                    {ui(locale, l.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -87,7 +86,7 @@ export async function SiteFooter() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">Contact</h3>
+            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">{ui(locale, "footer.contact")}</h3>
             <ul className="mt-4 space-y-3 text-sm text-primary-foreground/80">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -114,32 +113,30 @@ export async function SiteFooter() {
 
           {/* Newsletter + legal */}
           <div>
-            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">Stay Connected</h3>
-            <p className="mt-4 text-sm text-primary-foreground/75">
-              Subscribe to receive AMYC announcements and news.
-            </p>
+            <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-accent">{ui(locale, "footer.stayConnected")}</h3>
+            <p className="mt-4 text-sm text-primary-foreground/75">{ui(locale, "footer.newsletterDesc")}</p>
             <form className="mt-3 flex gap-2" action="/api/newsletter" method="POST">
               <input
                 type="email"
                 name="email"
                 required
-                placeholder="Your email"
+                placeholder={locale === "ar" ? "بريدك الإلكتروني" : locale === "sw" ? "Barua pepe yako" : "Your email"}
                 className="h-10 w-full rounded-md border border-primary-foreground/20 bg-primary-foreground/5 px-3 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:border-accent focus:outline-none"
               />
               <button
                 type="submit"
                 className="inline-flex h-10 shrink-0 items-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
               >
-                Join
+                {ui(locale, "footer.join")}
               </button>
             </form>
             <div className="mt-6">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/50">Legal</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/50">{ui(locale, "footer.legal")}</h4>
               <ul className="mt-2 space-y-1.5">
                 {FOOTER_LEGAL.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-xs text-primary-foreground/70 transition hover:text-primary-foreground">
-                      {l.label}
+                    <Link href={lp(locale, l.href)} className="text-xs text-primary-foreground/70 transition hover:text-primary-foreground">
+                      {ui(locale, l.labelKey)}
                     </Link>
                   </li>
                 ))}
@@ -150,10 +147,10 @@ export async function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-primary-foreground/10 pt-6 text-center md:flex-row md:text-left">
           <p className="text-xs text-primary-foreground/60">
-            © {new Date().getFullYear()} {orgName}. All rights reserved.
+            © {new Date().getFullYear()} {orgName}. {ui(locale, "footer.rightsReserved")}
           </p>
           <p className="text-xs text-primary-foreground/50">
-            Official Digital Platform of AMYC · Tanga, Tanzania
+            {ui(locale, "footer.tagline")} · Tanga, Tanzania
           </p>
         </div>
       </div>

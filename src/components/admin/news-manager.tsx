@@ -14,9 +14,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { TranslationTabs, getTrField, setTrField } from "@/components/admin/translation-tabs"
 import { toast } from "sonner"
 import { Plus, Pencil, Trash2, Loader2, Newspaper, Search } from "lucide-react"
 import { ARTICLE_STATUSES, ARTICLE_KINDS } from "@/components/admin/nav-config"
+import { type Locale } from "@/lib/i18n"
 
 type Article = {
   id: string
@@ -34,6 +36,7 @@ type Article = {
   scope: string
   publishedAt: string | null
   expiresAt: string | null
+  translations: string | null
   createdAt: string
 }
 
@@ -48,6 +51,11 @@ function fmtDate(d: string | null) {
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
 
+function parseTr(raw: string | null): Record<string, any> {
+  if (!raw) return {}
+  try { return JSON.parse(raw) } catch { return {} }
+}
+
 export function NewsManager() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,6 +64,8 @@ export function NewsManager() {
   const [editing, setEditing] = useState<Article | null>(null)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<any>(EMPTY)
+  const [tr, setTr] = useState<Record<string, any>>({})
+  const [langTab, setLangTab] = useState<Locale>("en")
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -71,6 +81,8 @@ export function NewsManager() {
   function openNew() {
     setEditing(null)
     setForm(EMPTY)
+    setTr({})
+    setLangTab("en")
     setOpen(true)
   }
   function openEdit(a: Article) {
@@ -83,20 +95,23 @@ export function NewsManager() {
       publishedAt: a.publishedAt ? a.publishedAt.slice(0, 10) : "",
       expiresAt: a.expiresAt ? a.expiresAt.slice(0, 10) : "",
     })
+    setTr(parseTr(a.translations))
+    setLangTab("en")
     setOpen(true)
   }
 
   async function save() {
     if (!form.title || !form.excerpt || !form.content) {
-      toast.error("Title, excerpt and content are required.")
+      toast.error("English title, excerpt and content are required.")
       return
     }
     setSaving(true)
     try {
+      const payload = { ...form, translations: JSON.stringify(tr) }
       const url = editing ? `/api/admin/news/${editing.id}` : "/api/admin/news"
       const method = editing ? "PUT" : "POST"
       const res = await fetch(url, {
-        method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form),
+        method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (res.ok) {
@@ -149,6 +164,15 @@ export function NewsManager() {
     ARCHIVED: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
   }
 
+  // Check translation status for display
+  function trStatus(a: Article): { sw: boolean; ar: boolean } {
+    const t = parseTr(a.translations)
+    return {
+      sw: !!(t.sw?.title && t.sw?.excerpt && t.sw?.content),
+      ar: !!(t.ar?.title && t.ar?.excerpt && t.ar?.content),
+    }
+  }
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -183,44 +207,53 @@ export function NewsManager() {
                     <th className="px-4 py-3 text-left font-medium">Title</th>
                     <th className="px-4 py-3 text-left font-medium">Kind</th>
                     <th className="px-4 py-3 text-left font-medium">Status</th>
+                    <th className="px-4 py-3 text-center font-medium">SW</th>
+                    <th className="px-4 py-3 text-center font-medium">AR</th>
                     <th className="px-4 py-3 text-left font-medium">Published</th>
-                    <th className="px-4 py-3 text-left font-medium">Expires</th>
                     <th className="px-4 py-3 text-right font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filtered.map((a) => (
-                    <tr key={a.id} className="transition hover:bg-secondary/30">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-foreground">{a.title}</p>
-                            <p className="truncate text-xs text-muted-foreground">{a.category || a.kind}</p>
+                  {filtered.map((a) => {
+                    const ts = trStatus(a)
+                    return (
+                      <tr key={a.id} className="transition hover:bg-secondary/30">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-foreground">{a.title}</p>
+                              <p className="truncate text-xs text-muted-foreground">{a.category || a.kind}</p>
+                            </div>
+                            {a.featured && <Badge className="bg-accent text-accent-foreground text-[0.6rem] shrink-0">Featured</Badge>}
                           </div>
-                          {a.featured && <Badge className="bg-accent text-accent-foreground text-[0.6rem] shrink-0">Featured</Badge>}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3"><Badge variant="outline" className="text-[0.65rem]">{a.kind}</Badge></td>
-                      <td className="px-4 py-3">
-                        <Select value={a.status} onValueChange={(v) => quickStatus(a, v)}>
-                          <SelectTrigger className="h-7 w-[120px] border-0 p-0">
-                            <Badge className={`${statusColor[a.status]} text-[0.65rem]`} variant="secondary">{a.status}</Badge>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ARTICLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(a.publishedAt)}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(a.expiresAt)}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(a)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3"><Badge variant="outline" className="text-[0.65rem]">{a.kind}</Badge></td>
+                        <td className="px-4 py-3">
+                          <Select value={a.status} onValueChange={(v) => quickStatus(a, v)}>
+                            <SelectTrigger className="h-7 w-[120px] border-0 p-0">
+                              <Badge className={`${statusColor[a.status]} text-[0.65rem]`} variant="secondary">{a.status}</Badge>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ARTICLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem] font-bold ${ts.sw ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>{ts.sw ? "✓" : "—"}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem] font-bold ${ts.ar ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>{ts.ar ? "✓" : "—"}</span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(a.publishedAt)}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(a)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -228,85 +261,128 @@ export function NewsManager() {
         </CardContent>
       </Card>
 
-      {/* Editor dialog */}
+      {/* Editor dialog with translation tabs */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Article" : "New Article"}</DialogTitle>
-            <DialogDescription>{editing ? "Update the article details below." : "Create a new news item or announcement."}</DialogDescription>
+            <DialogDescription>{editing ? "Update the article details below." : "Create a new news item or announcement. Use the language tabs to translate content."}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Title *</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Article title" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Kind</Label>
-                <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{ARTICLE_KINDS.map((k) => <SelectItem key={k} value={k}>{k === "NEWS" ? "News" : "Announcement"}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{ARTICLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Category</Label>
-                <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Da'wah, Education" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Author</Label>
-                <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Author / department" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Excerpt *</Label>
-              <Textarea value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} rows={2} placeholder="Short summary shown in cards" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Content *</Label>
-              <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder="Full article content. Use ## for headings." />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Featured image URL</Label>
-              <Input value={form.featuredImage} onChange={(e) => setForm({ ...form, featuredImage: e.target.value })} placeholder="/images/news-…jpg" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Image credit</Label>
-                <Input value={form.imageCredit} onChange={(e) => setForm({ ...form, imageCredit: e.target.value })} placeholder="Photographer / source" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Scope</Label>
-                <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["HQ", "REGION", "SCHOOL", "PROGRAMME"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Publish date</Label>
-                <Input type="date" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Expiry date (announcements)</Label>
-                <Input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
-                <p className="text-[0.65rem] text-muted-foreground">When reached, the item auto-archives (not deleted).</p>
+            {/* General info (shared across languages) */}
+            <div className="rounded-lg border border-border bg-secondary/30 p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">General Information</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Kind</Label>
+                  <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{ARTICLE_KINDS.map((k) => <SelectItem key={k} value={k}>{k === "NEWS" ? "News" : "Announcement"}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Status</Label>
+                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{ARTICLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Category</Label>
+                  <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Da'wah, Education" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Author</Label>
+                  <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Author / department" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Publish date</Label>
+                  <Input type="date" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Expiry date (announcements)</Label>
+                  <Input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>Featured image URL</Label>
+                  <Input value={form.featuredImage} onChange={(e) => setForm({ ...form, featuredImage: e.target.value })} placeholder="/images/news-…jpg" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Image credit</Label>
+                  <Input value={form.imageCredit} onChange={(e) => setForm({ ...form, imageCredit: e.target.value })} placeholder="Photographer / source" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Scope</Label>
+                  <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["HQ", "REGION", "SCHOOL", "PROGRAMME"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-border p-3 sm:col-span-2">
+                  <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} id="featured" />
+                  <Label htmlFor="featured" className="cursor-pointer text-sm">Feature this article on the homepage</Label>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-border p-3">
-              <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} id="featured" />
-              <Label htmlFor="featured" className="cursor-pointer text-sm">Feature this article on the homepage</Label>
+
+            {/* Content with language tabs */}
+            <div className="rounded-lg border border-border p-4">
+              <TranslationTabs active={langTab} onChange={setLangTab}>
+                {(locale) => (
+                  <div className="space-y-4">
+                    {locale === "en" ? (
+                      <>
+                        <div className="space-y-1.5">
+                          <Label>Title (English) *</Label>
+                          <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Article title" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Excerpt (English) *</Label>
+                          <Textarea value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} rows={2} placeholder="Short summary shown in cards" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Content (English) *</Label>
+                          <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder="Full article content. Use ## for headings." />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-1.5">
+                          <Label>Title ({locale === "sw" ? "Kiswahili" : "العربية"})</Label>
+                          <Input
+                            value={getTrField(tr, locale, "title")}
+                            onChange={(e) => setTr((t) => setTrField(t, locale, "title", e.target.value))}
+                            placeholder={locale === "sw" ? "Kichwa cha habari" : "العنوان"}
+                            dir={locale === "ar" ? "rtl" : "ltr"}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Excerpt ({locale === "sw" ? "Kiswahili" : "العربية"})</Label>
+                          <Textarea
+                            value={getTrField(tr, locale, "excerpt")}
+                            onChange={(e) => setTr((t) => setTrField(t, locale, "excerpt", e.target.value))}
+                            rows={2}
+                            placeholder={locale === "sw" ? "Muhtasari" : "الملخص"}
+                            dir={locale === "ar" ? "rtl" : "ltr"}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Content ({locale === "sw" ? "Kiswahili" : "العربية"})</Label>
+                          <Textarea
+                            value={getTrField(tr, locale, "content")}
+                            onChange={(e) => setTr((t) => setTrField(t, locale, "content", e.target.value))}
+                            rows={6}
+                            placeholder={locale === "sw" ? "Maudhui kamili" : "المحتوى الكامل"}
+                            dir={locale === "ar" ? "rtl" : "ltr"}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </TranslationTabs>
             </div>
           </div>
           <DialogFooter>

@@ -5,6 +5,8 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, MapPin, ArrowRight, GraduationCap } from "lucide-react"
+import { lp } from "@/components/site/nav-config"
+import { ui, type Locale } from "@/lib/i18n"
 
 type School = {
   id: string
@@ -19,17 +21,18 @@ type School = {
   about: string
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  MAAHAD: "Maahad (Religious)",
-  SECONDARY: "Secondary",
-  PRIMARY: "Primary",
-  COLLEGE: "Teachers College",
-}
-
-export function SchoolsDirectory({ schools }: { schools: School[] }) {
+export function SchoolsDirectory({ schools, locale }: { schools: School[]; locale: Locale }) {
   const [q, setQ] = useState("")
   const [type, setType] = useState<string>("ALL")
   const [region, setRegion] = useState<string>("ALL")
+  const t = (k: string) => ui(locale, k)
+
+  const TYPE_LABELS: Record<string, string> = {
+    MAAHAD: t("education.maahad"),
+    SECONDARY: t("education.secondary"),
+    PRIMARY: t("education.primary"),
+    COLLEGE: t("education.college"),
+  }
 
   const regions = useMemo(() => {
     const set = new Set<string>()
@@ -52,24 +55,24 @@ export function SchoolsDirectory({ schools }: { schools: School[] }) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search schools by name…"
-              className="h-11 pl-9"
+              placeholder={t("common.searchSchools")}
+              className="h-11 ps-9"
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            {(["ALL", "MAAHAD", "SECONDARY", "PRIMARY", "COLLEGE"] as const).map((t) => (
+            {(["ALL", "MAAHAD", "SECONDARY", "PRIMARY", "COLLEGE"] as const).map((ty) => (
               <Button
-                key={t}
+                key={ty}
                 size="sm"
-                variant={type === t ? "default" : "outline"}
-                onClick={() => setType(t)}
+                variant={type === ty ? "default" : "outline"}
+                onClick={() => setType(ty)}
                 className="h-9"
               >
-                {t === "ALL" ? "All Types" : TYPE_LABELS[t]}
+                {ty === "ALL" ? t("common.allTypes") : TYPE_LABELS[ty]}
               </Button>
             ))}
           </div>
@@ -78,14 +81,14 @@ export function SchoolsDirectory({ schools }: { schools: School[] }) {
             onChange={(e) => setRegion(e.target.value)}
             className="h-11 rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="ALL">All Regions</option>
+            <option value="ALL">{t("common.allRegions")}</option>
             {regions.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Showing <strong className="text-foreground">{filtered.length}</strong> of {schools.length} institutions
+          {t("common.showing")} <strong className="text-foreground">{filtered.length}</strong> {t("common.of")} {schools.length} {t("common.institutions")}
         </p>
       </div>
 
@@ -93,7 +96,7 @@ export function SchoolsDirectory({ schools }: { schools: School[] }) {
         {filtered.map((s) => (
           <Link
             key={s.id}
-            href={`/education/${s.slug}`}
+            href={lp(locale, `/education/${s.slug}`)}
             className="group flex flex-col rounded-xl border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card"
           >
             <div className="flex items-center justify-between">
@@ -115,7 +118,7 @@ export function SchoolsDirectory({ schools }: { schools: School[] }) {
               {s.medium && <span className="rounded bg-secondary px-2 py-0.5 text-[0.65rem] text-secondary-foreground">{s.medium}</span>}
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-              View profile <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+              {t("common.learnMore")} <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 rtl:rotate-180" />
             </span>
           </Link>
         ))}
@@ -123,7 +126,7 @@ export function SchoolsDirectory({ schools }: { schools: School[] }) {
 
       {filtered.length === 0 && (
         <div className="mt-10 rounded-xl border border-dashed border-border py-16 text-center">
-          <p className="text-sm text-muted-foreground">No schools match your filters.</p>
+          <p className="text-sm text-muted-foreground">{t("common.noMatches")}</p>
         </div>
       )}
     </div>

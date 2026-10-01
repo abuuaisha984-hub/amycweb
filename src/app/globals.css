@@ -198,8 +198,50 @@
   background-color: color-mix(in oklch, var(--primary) 50%, transparent);
 }
 
-/* RTL support for Arabic */
+/* RTL support for Arabic — comprehensive */
 [dir="rtl"] {
+  text-align: right;
+  font-family: var(--font-arabic), var(--font-sans), "Amiri", "Noto Naskh Arabic", serif;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-sans), "Amiri", "Noto Naskh Arabic", serif;
+}
+
+/* Flip directional icons in RTL */
+[dir="rtl"] .rtl\:rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Ensure tables in RTL have proper alignment */
+[dir="rtl"] table {
+  text-align: right;
+}
+
+/* Dropdown menus open from the correct side in RTL */
+[dir="rtl"] [data-radix-popper-content-wrapper] {
+  direction: rtl;
+}
+
+/* Form inputs in RTL */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+/* Navigation menu content in RTL */
+[dir="rtl"] [data-slot="navigation-menu-content"] {
+  direction: rtl;
+}
+
+/* Ensure the header layout reverses properly in RTL */
+[dir="rtl"] .container-institutional {
+  direction: rtl;
+}
+
+/* Prose content in RTL */
+[dir="rtl"] .prose {
   text-align: right;
 }
 

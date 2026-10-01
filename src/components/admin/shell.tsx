@@ -6,18 +6,18 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { AmycLogo } from "@/components/site/logo"
 import { ADMIN_NAV, ROLE_LABELS } from "@/components/admin/nav-config"
-import { can } from "@/lib/rbac"
+import { isSuperAdmin } from "@/lib/rbac"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   LayoutDashboard, Newspaper, CalendarDays, GraduationCap, MapPin, FolderOpen,
-  Image, Mail, FileText, ScrollText, Settings, Menu, LogOut, ExternalLink, X,
+  Image, Mail, FileText, ScrollText, Settings, Menu, LogOut, ExternalLink, X, Languages,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const ICONS: Record<string, any> = {
   LayoutDashboard, Newspaper, CalendarDays, GraduationCap, MapPin, FolderOpen,
-  Image, Mail, FileText, ScrollText, Settings,
+  Image, Mail, FileText, ScrollText, Settings, Languages,
 }
 
 export function AdminShell({
@@ -46,8 +46,8 @@ export function AdminShell({
         {ADMIN_NAV.map((item) => {
           const Icon = ICONS[item.icon] || LayoutDashboard
           const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-          const allowed = !item.entity || can(user.role, item.entity)
-          if (!allowed) return null
+          // Hide super-admin-only items from regular admins
+          if (item.superAdminOnly && !isSuperAdmin(user.role)) return null
           return (
             <Link
               key={item.href}
