@@ -8,6 +8,8 @@ export function LanguageSwitcher({ variant = "ghost" }: { variant?: "ghost" | "o
   const { locale, setLocale } = useLanguage()
   const labels: Record<Locale, string> = { en: "English", sw: "Kiswahili", ar: "العربية" }
 
+  const mobileLabels: Record<Locale, string> = { en: "EN", sw: "SW", ar: "AR" }
+
   return (
     <div
       className={cn(
@@ -35,7 +37,7 @@ export function LanguageSwitcher({ variant = "ghost" }: { variant?: "ghost" | "o
               : variant === "mobile" ? "bg-black text-white hover:bg-white/15 hover:text-white" : variant === "ghost" ? "text-white/90 hover:bg-white/10 hover:text-white" : "text-foreground/75 hover:bg-secondary hover:text-foreground"
           )}
         >
-          {labels[language]}
+          {variant === "mobile" ? mobileLabels[language] : labels[language]}
         </button>
       ))}
     </div>
