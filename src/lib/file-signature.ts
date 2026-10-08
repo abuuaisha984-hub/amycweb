@@ -1,0 +1,12 @@
+export function matchesFileSignature(extension: string, bytes: Uint8Array): boolean {
+  const startsWith = (...signature: number[]) => signature.every((value, index) => bytes[index] === value)
+  switch (extension) {
+    case "pdf": return startsWith(0x25, 0x50, 0x44, 0x46, 0x2d) // %PDF-
+    case "png": return startsWith(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
+    case "jpg": return startsWith(0xff, 0xd8, 0xff)
+    case "webp": return startsWith(0x52, 0x49, 0x46, 0x46) && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+    case "doc": case "xls": case "ppt": return startsWith(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)
+    case "docx": case "xlsx": case "pptx": case "zip": return startsWith(0x50, 0x4b, 0x03, 0x04) || startsWith(0x50, 0x4b, 0x05, 0x06) || startsWith(0x50, 0x4b, 0x07, 0x08)
+    default: return false
+  }
+}

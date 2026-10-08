@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n"
+import { REGION_BANDS } from "@/lib/region-bands"
 
 /** Prefix a path with the locale segment. */
 export function lp(locale: Locale, path: string): string {
@@ -6,21 +7,55 @@ export function lp(locale: Locale, path: string): string {
   return `/${locale}${path.startsWith("/") ? path : "/" + path}`
 }
 
-export type NavChild = { labelKey: string; href: string; descriptionKey?: string; label?: string; description?: string }
+export type NavChild = { labelKey: string; href: string }
 export type NavItem = { labelKey: string; href: string; children?: NavChild[] }
 
 // hrefs here are locale-agnostic; the header/footer will prefix them via lp(locale, href)
 export const NAV: NavItem[] = [
+  { labelKey: "nav.home", href: "/" },
   {
     labelKey: "nav.about",
     href: "/about",
     children: [
-      { labelKey: "about.overview", href: "/about", descriptionKey: "home.whoWeAre.eyebrow" },
-      { labelKey: "about.history", href: "/about#history", descriptionKey: "about.history" },
-      { labelKey: "about.mission", href: "/about#mission", descriptionKey: "about.mission" },
-      { labelKey: "about.values", href: "/about#values", descriptionKey: "about.valuesTitle" },
-      { labelKey: "about.leadership", href: "/about#leadership", descriptionKey: "about.leadershipTitle" },
-      { labelKey: "about.structure", href: "/about#structure", descriptionKey: "about.structureTitle" },
+      { labelKey: "about.overview", href: "/about" },
+      { labelKey: "about.history", href: "/about#history" },
+      { labelKey: "about.mission", href: "/about#mission" },
+      { labelKey: "about.values", href: "/about#values" },
+      { labelKey: "about.leadership", href: "/about#leadership" },
+      { labelKey: "about.structure", href: "/about#structure" },
+    ],
+  },
+  {
+    labelKey: "nav.schools",
+    href: "/education",
+    children: [
+      { labelKey: "education.allSchools", href: "/education?type=ALL" },
+      { labelKey: "education.maahad", href: "/education?type=MAAHAD" },
+      { labelKey: "education.primary", href: "/education?type=PRIMARY" },
+      { labelKey: "education.secondary", href: "/education?type=SECONDARY" },
+      { labelKey: "education.college", href: "/education?type=COLLEGE" },
+      { labelKey: "education.university", href: "/education?type=UNIVERSITY" },
+    ],
+  },
+  {
+    labelKey: "nav.regions",
+    href: "/regions",
+    children: [
+      { labelKey: "regions.band.all", href: "/regions" },
+      ...REGION_BANDS.map((band) => ({
+        labelKey: band.labelKey,
+        href: `/regions?kanda=${band.key}`,
+      })),
+    ],
+  },
+  {
+    labelKey: "nav.mediaGallery",
+    href: "/media",
+    children: [
+      { labelKey: "media.title", href: "/media" },
+      { labelKey: "news.title", href: "/news" },
+      { labelKey: "events.title", href: "/events" },
+      { labelKey: "documents.title", href: "/documents?category=Publication" },
     ],
   },
   {
@@ -38,50 +73,7 @@ export const NAV: NavItem[] = [
       { labelKey: "prog.orphan-welfare", href: "/programmes/orphan-welfare" },
     ],
   },
-  {
-    labelKey: "nav.education",
-    href: "/education",
-    children: [
-      { labelKey: "education.title", href: "/education", descriptionKey: "education.desc" },
-      { labelKey: "education.maahad", href: "/education?type=MAAHAD" },
-      { labelKey: "education.secondary", href: "/education?type=SECONDARY" },
-      { labelKey: "education.primary", href: "/education?type=PRIMARY" },
-      { labelKey: "education.college", href: "/education?type=COLLEGE" },
-    ],
-  },
-  {
-    labelKey: "nav.regions",
-    href: "/regions",
-    children: [
-      { labelKey: "regions.title", href: "/regions", descriptionKey: "regions.desc" },
-    ],
-  },
-  {
-    labelKey: "nav.media",
-    href: "/media",
-    children: [
-      { labelKey: "news.title", href: "/news" },
-      { labelKey: "news.announcements", href: "/news?kind=ANNOUNCEMENT" },
-      { labelKey: "events.title", href: "/events" },
-      { labelKey: "media.title", href: "/media" },
-      { labelKey: "documents.title", href: "/documents?category=Publication" },
-    ],
-  },
-  {
-    labelKey: "nav.resources",
-    href: "/documents",
-    children: [
-      { labelKey: "documents.title", href: "/documents", descriptionKey: "documents.desc" },
-      { labelKey: "doc.annual-report", href: "/documents?category=Annual Report" },
-      { labelKey: "doc.strategic-plan", href: "/documents?category=Strategic Plan" },
-      { labelKey: "doc.policy", href: "/documents?category=Policy" },
-      { labelKey: "doc.form", href: "/documents?category=Form" },
-    ],
-  },
-  {
-    labelKey: "nav.contact",
-    href: "/contact",
-  },
+  { labelKey: "nav.resources", href: "/documents" },
 ]
 
 export const FOOTER_QUICK = [

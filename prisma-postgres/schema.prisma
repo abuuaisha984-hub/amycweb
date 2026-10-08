@@ -1,0 +1,446 @@
+// AMYC — Ansaar Muslim Youth Centre
+// Comprehensive relational schema for the institutional digital platform.
+// Provider: SQLite (development) — designed to be portable to PostgreSQL/MySQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH & ADMINISTRATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  name               String
+  passwordHash       String
+  role               String    @default("CONTENT_ADMIN") // Main operating roles: SUPER_ADMIN | ADMIN; legacy scoped roles remain for existing accounts.
+  status             String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  mustChangePassword Boolean   @default(false)
+  twoFactorEnabled   Boolean   @default(false)
+  scopeRegionId      String? // for REGIONAL_EDITOR — limits access to one Jimbo
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@index([role])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userName  String
+  action    String // CREATE | UPDATE | DELETE | PUBLISH | UNPUBLISH | UPLOAD | LOGIN | LOGIN_FAILED | PERMISSION_CHANGE
+  entity    String // Article | School | Region | Document | ...
+  entityId  String?
+  detail    String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAXONOMY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  type      String // NEWS | DOCUMENT | GALLERY | EVENT | PROGRAMME
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([type, active])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT — Articles (News + Announcements with auto-expiry & workflow)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Article {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  kind          String    @default("NEWS") // NEWS | ANNOUNCEMENT
+  title         String
+  excerpt       String
+  content       String
+  featuredImage String?
+  imageCredit   String?
+  category      String?
+  scope         String    @default("HQ") // HQ | REGION | SCHOOL | PROGRAMME
+  scopeRegionId String?
+  scopeSchoolId String?
+  author        String?
+  status        String    @default("DRAFT") // DRAFT | PUBLISHED
+  featured      Boolean   @default(false)
+  publishedAt   DateTime?
+  expiresAt     DateTime? // when reached, item auto-archives (announcements)
+  translations  String    @default("{}") // JSON { sw: {title,excerpt,content}, ar: {...} }
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([kind, status, publishedAt])
+  @@index([scope, scopeRegionId])
+  @@index([featured])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Event {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  title            String
+  description      String
+  image            String?
+  startDate        DateTime
+  endDate          DateTime?
+  startTime        String?
+  endTime          String?
+  venue            String?
+  location         String?
+  organizer        String?
+  registrationLink String?
+  contact          String?
+  category         String?
+  status           String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED | CANCELLED
+  translations     String    @default("{}")
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([startDate])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATION — Schools & Institutions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model School {
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  name               String
+  shortName          String?
+  type               String // MAAHAD | PRIMARY | SECONDARY | COLLEGE
+  category           String? // Religious | Environmental
+  level              String? // Primary | O-Level | A-Level | Teacher Training
+  gender             String? // Mixed | Boys | Girls
+  medium             String? // Swahili | English
+  region             String?
+  district           String?
+  ward               String?
+  address            String?
+  email              String?
+  phone              String?
+  about              String
+  history            String?
+  facilities         String    @default("[]") // JSON array of strings
+  levelsOffered      String    @default("[]") // JSON array
+  website            String?
+  logo               String?
+  image              String?
+  jimboId            String?
+  imageCredit        String?
+  sourceUrl          String?
+  sourceName         String?
+  sources            String    @default("[]") // JSON array with source URLs and fields verified
+  dateVerified       DateTime?
+  verificationStatus String    @default("UNVERIFIED") // UNVERIFIED | VERIFIED | PARTIAL
+  status             String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  sortOrder          Int       @default(0)
+  translations       String    @default("{}")
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  jimbo Region? @relation(fields: [jimboId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([region])
+  @@index([jimboId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REGIONS / MAJIMBO
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Region {
+  id                         String    @id @default(cuid())
+  slug                       String    @unique
+  name                       String
+  englishName                String?
+  administrativeRegion       String?
+  district                   String?
+  locationVerificationStatus String    @default("UNVERIFIED") // VERIFIED | PARTIAL | UNVERIFIED
+  sourceUrl                  String?
+  sourceName                 String?
+  sources                    String    @default("[]")
+  dateVerified               DateTime?
+  overview                   String
+  history                    String?
+  leadership                 String    @default("[]") // JSON array of {position, name}
+  activities                 String    @default("[]") // JSON array of strings
+  branches                   String    @default("[]") // JSON array of {name, note}
+  contact                    String?
+  email                      String?
+  phone                      String?
+  website                    String?
+  image                      String?
+  sortOrder                  Int       @default(0)
+  status                     String    @default("PUBLISHED")
+  translations               String    @default("{}")
+  deletedAt                  DateTime?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  schools School[]
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROGRAMMES & PROJECTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Programme {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  icon             String? // lucide icon name
+  shortDescription String
+  description      String
+  image            String?
+  sortOrder        Int      @default(0)
+  status           String   @default("PUBLISHED")
+  translations     String   @default("{}")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  description  String
+  image        String?
+  region       String?
+  status       String   @default("PUBLISHED")
+  featured     Boolean  @default(false)
+  translations String   @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([featured])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOCUMENT MANAGEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Document {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  description   String
+  category      String // Annual Report | Strategic Plan | Policy | Form | Publication | Financial | Guideline | Official Notice
+  fileType      String // pdf | docx | xlsx | pptx | zip | image
+  fileName      String // generated secure filename
+  filePath      String // /uploads/docs/...
+  fileSize      Int // bytes
+  mimeType      String
+  thumbnail     String?
+  author        String?
+  department    String?
+  publishedAt   DateTime  @default(now())
+  downloadCount Int       @default(0)
+  status        String    @default("PUBLISHED") // DRAFT | PUBLISHED
+  archiveDate   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([category])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA LIBRARY & GALLERIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MediaItem {
+  id        String   @id @default(cuid())
+  title     String
+  type      String // IMAGE | VIDEO | AUDIO
+  url       String
+  thumbnail String?
+  caption   String?
+  credit    String?
+  album     String?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([type])
+}
+
+model Gallery {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  description String?
+  category    String? // Events | Schools | Projects | Dawah | Community
+  coverImage  String?
+  status      String        @default("PUBLISHED") // DRAFT | PUBLISHED
+  createdAt   DateTime      @default(now())
+  items       GalleryItem[]
+}
+
+model GalleryItem {
+  id        String  @id @default(cuid())
+  galleryId String
+  mediaId   String?
+  mediaUrl  String
+  caption   String?
+  sortOrder Int     @default(0)
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, mediaUrl])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATIC PAGES & LEADERSHIP
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Page {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  content      String
+  excerpt      String?
+  image        String?
+  status       String   @default("PUBLISHED")
+  translations String   @default("{}")
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+model Leader {
+  id           String    @id @default(cuid())
+  name         String
+  position     String
+  category     String    @default("NATIONAL") // NATIONAL | REGIONAL
+  regionId     String?
+  department   String?
+  level        String?
+  photo        String?
+  photoAlt     String?
+  photoCredit  String?
+  bio          String?
+  email        String?
+  phone        String?
+  startDate    DateTime?
+  endDate      DateTime?
+  sortOrder    Int       @default(0)
+  featured     Boolean   @default(false)
+  status       String    @default("INACTIVE") // ACTIVE | INACTIVE | ARCHIVED; existing names require admin verification
+  translations String    @default("{}")
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([category])
+  @@index([status, sortOrder])
+  @@index([regionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTACT & SITE CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    String   @default("NEW") // NEW | READ | REPLIED | CLOSED
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+// Anonymous page-view analytics. Deliberately stores no IP address, user agent,
+// cookie identifier, or query string, so the dashboard reports visits rather
+// than identifying individual people.
+model VisitEvent {
+  id           String   @id @default(cuid())
+  visitorId    String?
+  pathname     String
+  locale       String
+  country      String   @default("Unknown")
+  region       String   @default("Unknown")
+  city         String   @default("Unknown")
+  referrerHost String?
+  createdAt    DateTime @default(now())
+  visitor      Visitor? @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([pathname, createdAt])
+  @@index([visitorId, createdAt])
+}
+
+// Anonymous unique visitors; only a keyed hash of the browser cookie is stored.
+model Visitor {
+  id             String       @id @default(cuid())
+  visitorHash    String       @unique
+  country        String       @default("Unknown")
+  region         String       @default("Unknown")
+  city           String       @default("Unknown")
+  firstVisitedAt DateTime     @default(now())
+  lastVisitedAt  DateTime     @default(now())
+  events         VisitEvent[]
+
+  @@index([lastVisitedAt])
+  @@index([country, lastVisitedAt])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON-encoded value
+}
+
+model SocialLink {
+  id        String  @id @default(cuid())
+  platform  String
+  url       String
+  handle    String?
+  icon      String?
+  sortOrder Int     @default(0)
+}
+
+model ExternalLink {
+  id        String  @id @default(cuid())
+  label     String
+  url       String
+  category  String? // School | Region | Institution
+  sortOrder Int     @default(0)
+}

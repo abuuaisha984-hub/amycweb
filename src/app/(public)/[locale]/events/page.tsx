@@ -6,6 +6,15 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Clock, MapPin, User, ArrowRight } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { localizedField, ui, formatDate, type Locale } from "@/lib/locale-page"
+import { publicImage } from "@/lib/public-image"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  return publicPageMetadata(locale, "/events", ui(locale, "events.title"), ui(locale, "events.desc"))
+}
 
 export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeStr } = await params
@@ -40,6 +49,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             {upcoming.map((e) => (
               <Card key={e.id} className="group overflow-hidden border-border transition hover:border-primary/30 hover:shadow-card">
+                {publicImage(e.image) && <img src={publicImage(e.image)!} alt="" className="aspect-[16/7] w-full object-cover" />}
                 <CardContent className="flex gap-5 p-6">
                   <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-primary text-primary-foreground">
                     <span className="text-2xl font-bold leading-none">{new Date(e.startDate).getDate()}</span>
@@ -47,14 +57,14 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      {e.category && <Badge variant="secondary" className="text-[0.65rem]">{e.category}</Badge>}
+                      {e.category && <Badge variant="secondary" className="text-[0.65rem]">{localizedField(e, "category", locale, e.category)}</Badge>}
                       {e.startTime && <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" />{e.startTime}</span>}
                     </div>
                     <h3 className="mt-1.5 font-serif text-lg font-semibold leading-snug text-foreground">{localizedField(e, "title", locale, e.title)}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">{localizedField(e, "description", locale, e.description)}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                      {e.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{e.location}</span>}
-                      {e.organizer && <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{e.organizer}</span>}
+                      {e.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{localizedField(e, "location", locale, e.location)}</span>}
+                      {e.organizer && <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{localizedField(e, "organizer", locale, e.organizer)}</span>}
                     </div>
                     {e.registrationLink && (
                       <a href={e.registrationLink} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">

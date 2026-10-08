@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { parseTranslations } from "@/lib/i18n"
 import { Check, Minus } from "lucide-react"
+import { requireAdminPermission } from "@/lib/admin-page-access"
 
 function trStatus(translations: string | null): { sw: boolean; ar: boolean } {
   const t = parseTranslations(translations)
@@ -26,6 +27,7 @@ function StatusCell({ ok }: { ok: boolean }) {
 }
 
 export default async function TranslationStatusPage() {
+  await requireAdminPermission("article")
   const [articles, programmes, schools, regions, pages] = await Promise.all([
     db.article.findMany({ where: { deletedAt: null, status: "PUBLISHED" }, orderBy: { publishedAt: "desc" }, select: { id: true, title: true, translations: true, kind: true } }),
     db.programme.findMany({ where: { status: "PUBLISHED" }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true, translations: true } }),
@@ -35,7 +37,7 @@ export default async function TranslationStatusPage() {
   ])
 
   const sections = [
-    { label: "News & Announcements", items: articles.map((a: any) => ({ id: a.id, name: a.title, tr: a.translations, badge: a.kind })) },
+    { label: "News", items: articles.map((a: any) => ({ id: a.id, name: a.title, tr: a.translations, badge: "News" })) },
     { label: "Programmes", items: programmes.map((p: any) => ({ id: p.id, name: p.name, tr: p.translations })) },
     { label: "Schools", items: schools.map((s: any) => ({ id: s.id, name: s.name, tr: s.translations })) },
     { label: "Regions (Majimbo)", items: regions.map((r: any) => ({ id: r.id, name: r.name, tr: r.translations })) },

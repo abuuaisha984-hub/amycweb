@@ -1,0 +1,15 @@
+ALTER TABLE "Leader" ADD COLUMN "department" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "level" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "photoAlt" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "photoCredit" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "email" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "phone" TEXT;
+ALTER TABLE "Leader" ADD COLUMN "startDate" DATETIME;
+ALTER TABLE "Leader" ADD COLUMN "endDate" DATETIME;
+ALTER TABLE "Leader" ADD COLUMN "featured" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Leader" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'INACTIVE';
+ALTER TABLE "Leader" ADD COLUMN "deletedAt" DATETIME;
+ALTER TABLE "Leader" ADD COLUMN "updatedAt" DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00';
+UPDATE "Leader" SET "updatedAt" = "createdAt";
+CREATE INDEX "Leader_status_sortOrder_idx" ON "Leader"("status", "sortOrder");
+CREATE INDEX "Leader_regionId_idx" ON "Leader"("regionId");

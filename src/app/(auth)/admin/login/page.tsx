@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AmycLogo } from "@/components/site/logo"
@@ -13,6 +13,10 @@ import Link from "next/link"
 import { toast } from "sonner"
 
 export default function AdminLoginPage() {
+  return <Suspense fallback={<div className="grid min-h-screen place-items-center">Loading sign in…</div>}><AdminLoginForm /></Suspense>
+}
+
+function AdminLoginForm() {
   const router = useRouter()
   const params = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -59,25 +63,20 @@ export default function AdminLoginPage() {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" name="email" type="email" required className="pl-9" placeholder="you@amyc.or.tz" defaultValue="superadmin@amyc.or.tz" />
+                  <Input id="email" name="email" type="email" required autoComplete="username" className="pl-9" placeholder="you@amyc.or.tz" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" name="password" type="password" required className="pl-9" placeholder="••••••••" defaultValue="Admin@2026" />
+                  <Input id="password" name="password" type="password" required autoComplete="current-password" className="pl-9" placeholder="••••••••" />
                 </div>
               </div>
               <Button type="submit" className="w-full bg-primary" disabled={loading}>
                 {loading ? <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Signing in…</> : "Sign In"}
               </Button>
             </form>
-            <div className="mt-6 rounded-lg bg-secondary/60 p-3 text-xs text-muted-foreground">
-              <p className="font-semibold text-foreground">Access credentials</p>
-              <p className="mt-1">System Admin: superadmin@amyc.or.tz / Admin@2026</p>
-              <p>Administrator: admin@amyc.or.tz / Admin@2026</p>
-            </div>
             <div className="mt-4 text-center">
               <Link href="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
                 <ArrowLeft className="h-3 w-3" /> Back to website

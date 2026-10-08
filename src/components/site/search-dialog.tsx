@@ -30,11 +30,9 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
   useEffect(() => {
     if (!q.trim()) {
-      setResults({})
       return
     }
     let cancelled = false
-    setLoading(true)
     const to = setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}&locale=${locale}`)
@@ -68,7 +66,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder={t("search.placeholderLong")} value={q} onValueChange={setQ} />
+      <CommandInput placeholder={t("search.placeholderLong")} value={q} onValueChange={(value) => { setQ(value); setLoading(Boolean(value.trim())); if (!value.trim()) setResults({}) }} />
       <CommandList className="max-h-[60vh]">
         <CommandEmpty>
           {q ? (loading ? t("search.searching") : t("search.noResults")) : t("search.typeToSearch")}

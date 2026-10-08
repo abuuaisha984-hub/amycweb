@@ -4,6 +4,8 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { Providers } from "@/components/providers"
+import { headers } from "next/headers"
+import { isLocale, isRTL, DEFAULT_LOCALE } from "@/lib/i18n"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +28,7 @@ const arabic = Amiri({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://amyc.or.tz"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://amyc.or.tz"),
   title: {
     default: "Ansaar Muslim Youth Centre (AMYC) — Official Digital Platform",
     template: "%s · AMYC",
@@ -64,9 +66,12 @@ export const metadata: Metadata = {
   alternates: { languages: { en: "/", sw: "/", ar: "/" } },
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const requestHeaders = await headers()
+  const requestedLocale = requestHeaders.get("x-amyc-locale")
+  const locale = requestedLocale && isLocale(requestedLocale) ? requestedLocale : DEFAULT_LOCALE
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={isRTL(locale) ? "rtl" : "ltr"} className="light" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${serif.variable} ${arabic.variable} min-h-screen bg-background font-sans antialiased`} suppressHydrationWarning>
         <Providers>
           {children}

@@ -37,12 +37,12 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const orgName = settings.orgName || "Ansaar Muslim Youth Centre"
   const tagline = setting(settings, "tagline", locale)
   const email = settings.email || "info@amyc.or.tz"
-  const phone = settings.phone || ""
+  const phone = settings.phone || "+2646620"
   const address = settings.address || "Tanga, Tanzania"
   const officeHours = settings.officeHours || ""
 
   return (
-    <footer className="mt-auto bg-primary text-primary-foreground">
+    <footer className="mt-auto bg-primary text-primary-foreground overflow-x-hidden">
       <div className="container-institutional py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* About */}
@@ -52,12 +52,17 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-primary-foreground/75">{tagline}</p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {socials.map((s) => {
-                const path = SOCIAL_ICONS[s.icon || s.platform] || SOCIAL_ICONS.MessageCircle
+              {socials.filter((s) => /^https?:\/\//i.test(s.url) && s.url.trim() !== "#").map((s) => {
+                const iconName = (s.icon || "").toLowerCase().replace(/[^a-z]/g, "")
+                const iconKey = iconName === "youtube" ? "Youtube" : iconName === "twitterx" || iconName === "x" ? "Twitter" : Object.keys(SOCIAL_ICONS).find((name) => name.toLowerCase() === iconName)
+                const path = iconKey ? SOCIAL_ICONS[iconKey] : null
+                if (!path) return null
                 return (
                   <a
                     key={s.id}
                     href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={s.platform}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/10 transition hover:bg-accent hover:text-accent-foreground"
                   >

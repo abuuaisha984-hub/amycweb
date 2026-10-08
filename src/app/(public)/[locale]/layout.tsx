@@ -3,9 +3,12 @@ import type { Metadata } from "next"
 import { SiteHeader } from "@/components/site/header"
 import { SiteFooter } from "@/components/site/footer"
 import { BackToTop } from "@/components/site/back-to-top"
+import { VisitorTracker } from "@/components/site/visitor-tracker"
+import { archiveExpiredAnnouncements } from "@/lib/expire-articles"
 import { LOCALES, isLocale, type Locale, isRTL, DEFAULT_LOCALE } from "@/lib/i18n"
 
 export const dynamicParams = false
+export const dynamic = "force-dynamic"
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
@@ -55,11 +58,13 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound()
   const loc = locale as Locale
   const dir = isRTL(loc) ? "rtl" : "ltr"
+  await archiveExpiredAnnouncements()
 
   return (
-    <div className="flex min-h-screen flex-col" dir={dir} data-locale={loc}>
+    <div className="flex min-h-screen flex-col overflow-x-hidden" dir={dir} data-locale={loc}>
+      <VisitorTracker />
       <SiteHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-x-hidden">{children}</main>
       <SiteFooter locale={loc} />
       <BackToTop />
     </div>

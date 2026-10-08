@@ -5,7 +5,14 @@ import { ContactForm } from "@/components/site/contact-form"
 import { Mail, Phone, MapPin, Clock, Radio } from "lucide-react"
 import { localizedField, ui, getSettings, type Locale } from "@/lib/locale-page"
 import { lp } from "@/components/site/nav-config"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  return publicPageMetadata(locale, "/contact", ui(locale, "contact.title"), ui(locale, "contact.desc"))
+}
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeStr } = await params
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
@@ -17,6 +24,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         eyebrow={t("nav.contact")}
         title={t("contact.title")}
         description={t("contact.desc")}
+        image="/images/Contact_information.webp"
         breadcrumbs={[{ label: t("common.home"), href: lp(locale, "/") }, { label: t("nav.contact") }]}
       />
       <Section>

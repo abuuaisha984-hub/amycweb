@@ -1,0 +1,6 @@
+ALTER TABLE "Visitor" ADD COLUMN "region" TEXT NOT NULL DEFAULT 'Unknown';
+ALTER TABLE "Visitor" ADD COLUMN "city" TEXT NOT NULL DEFAULT 'Unknown';
+
+ALTER TABLE "VisitEvent" ADD COLUMN "country" TEXT NOT NULL DEFAULT 'Unknown';
+ALTER TABLE "VisitEvent" ADD COLUMN "region" TEXT NOT NULL DEFAULT 'Unknown';
+ALTER TABLE "VisitEvent" ADD COLUMN "city" TEXT NOT NULL DEFAULT 'Unknown';

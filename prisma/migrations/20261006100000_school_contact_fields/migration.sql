@@ -1,0 +1,2 @@
+ALTER TABLE "School" ADD COLUMN "email" TEXT;
+ALTER TABLE "School" ADD COLUMN "phone" TEXT;

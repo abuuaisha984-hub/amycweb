@@ -4,35 +4,54 @@ import { PageHero } from "@/components/site/page-hero"
 import { Section, SectionHeading, Eyebrow } from "@/components/site/sections"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Target, Eye, GitBranch, Users2, ShieldCheck } from "lucide-react"
+import { Target, Eye, GitBranch, Users2, ShieldCheck, Award, BookOpen, Compass, Handshake } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { localizedField, ui, getSettings, setting, type Locale } from "@/lib/locale-page"
+import { publicImage } from "@/lib/public-image"
+import { ImageWithFallback } from "@/components/site/image-with-fallback"
+import { ABOUT_COPY } from "@/lib/about-content"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  return publicPageMetadata(locale, "/about", ui(locale, "home.whoWeAre.title"), ABOUT_COPY[locale].overview)
+}
 async function getData() {
   const [settings, leaders, programmes] = await Promise.all([
     getSettings(),
-    db.leader.findMany({ where: { category: "NATIONAL" }, orderBy: { sortOrder: "asc" } }),
+    db.leader.findMany({ where: { category: "NATIONAL", status: "ACTIVE", deletedAt: null }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
     db.programme.findMany({ where: { status: "PUBLISHED" }, orderBy: { sortOrder: "asc" }, take: 9 }),
   ])
   return { settings, leaders, programmes }
 }
 
-const VALUE_KEYS = [
-  "awareness",
-  "quality",
-  "wisdom",
-  "adherence",
-  "trustworthiness",
-  "collaboration",
+const VALUES = [
+  { key: "awareness", icon: Eye },
+  { key: "quality", icon: Award },
+  { key: "wisdom", icon: BookOpen },
+  { key: "adherence", icon: Compass },
+  { key: "trustworthiness", icon: ShieldCheck },
+  { key: "collaboration", icon: Handshake },
 ] as const
+
+function emphasizeHistoryText(text: string, phrases: string[], founderName: string, locale: Locale) {
+  const escapedPhrases = phrases.map((phrase) => phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  const parts = text.split(new RegExp(`(${escapedPhrases.join("|")})`, "g"))
+  return parts.map((part, index) => phrases.includes(part)
+    ? <strong key={`${part}-${index}`} className={part === founderName ? "font-bold text-primary" : "font-semibold text-foreground"}>
+        {part === founderName ? <bdi dir="ltr">{part}</bdi> : part}
+      </strong>
+    : part)
+}
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeStr } = await params
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
   const t = (k: string) => ui(locale, k)
+  const copy = ABOUT_COPY[locale]
   const { settings, leaders, programmes } = await getData()
-  const foundedYear = settings.foundedYear || "1980"
-  const headquarters = settings.headquarters || "Tanga, Tanzania"
   return (
     <>
       <PageHero
@@ -43,65 +62,41 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       />
 
       <Section id="overview">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
-          <div>
-            <Eyebrow>{t("about.overview")}</Eyebrow>
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-2xl">
+            <Eyebrow>{copy.overviewHeading}</Eyebrow>
             <h2 className="mt-4 font-serif text-3xl font-semibold tracking-tight text-balance">{t("about.whoWeAre")}</h2>
-            <div className="mt-5 space-y-4 text-base leading-relaxed text-muted-foreground text-pretty">
-              <p>
-                {t("about.overview.p1a")} {headquarters}.
-                {" "}{t("about.overview.p1b")} <strong className="text-foreground">{foundedYear}</strong>{" "}
-                {t("about.overview.p1c")}
-              </p>
-              <p>
-                {t("about.overview.p2a")} <strong className="text-foreground">{t("about.overview.p2b")}</strong>.
-              </p>
-              <p>
-                {t("about.overview.p3")}
-              </p>
-            </div>
           </div>
-          <Card className="h-fit border-primary/15 bg-secondary/30">
-            <CardContent className="space-y-4 p-6">
-              <h3 className="font-serif text-lg font-semibold">{t("about.atGlance")}</h3>
-              <dl className="space-y-3 text-sm">
-                <div className="flex justify-between gap-4 border-b border-border pb-2">
-                  <dt className="text-muted-foreground">{t("about.established")}</dt>
-                  <dd className="font-semibold text-foreground">{foundedYear}</dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-border pb-2">
-                  <dt className="text-muted-foreground">{t("about.headquarters")}</dt>
-                  <dd className="font-semibold text-foreground">{headquarters}</dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-border pb-2">
-                  <dt className="text-muted-foreground">{t("about.languages")}</dt>
-                  <dd className="font-semibold text-foreground">EN · SW · AR</dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-border pb-2">
-                  <dt className="text-muted-foreground">{t("about.radio")}</dt>
-                  <dd className="font-semibold text-foreground">{settings.radioStation || "Radio Ihsaan FM"}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">{t("about.email")}</dt>
-                  <dd className="font-semibold text-foreground">{settings.email || "info@amyc.or.tz"}</dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
+          <p className="mt-7 max-w-4xl border-s-2 border-accent ps-5 text-base leading-relaxed text-muted-foreground text-pretty sm:text-lg sm:leading-8">
+            {copy.overview}
+          </p>
         </div>
       </Section>
 
-      <Section id="history" className="bg-secondary/30">
-        <SectionHeading eyebrow={t("about.history")} title={t("about.historyTitle")} />
-        <div className="mt-6 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground text-pretty">
-          <p>
-            {t("about.overview.p2a")} <strong className="text-foreground">{t("about.overview.p2b")}</strong>.
-          </p>
-          <p className="rounded-lg border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-            <strong>{t("about.note")}</strong> {t("about.noteDesc")}
-          </p>
+      <section id="history" className="section-divider bg-secondary/25 py-16 sm:py-20">
+        <div className="container-institutional">
+          <div className="grid items-stretch md:grid-cols-2">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl border border-border bg-secondary shadow-soft md:aspect-auto md:min-h-[30rem] md:rounded-s-2xl md:rounded-e-none">
+              <ImageWithFallback
+                src="/images/Mudirwataasisi.JPG"
+                alt={t("about.historyImageAlt")}
+                loading="eager"
+                className="h-full w-full object-cover object-center"
+                fallback={<div className="h-full w-full bg-gradient-to-br from-primary/20 to-accent/20" />}
+              />
+            </div>
+            <div className="rounded-b-2xl border border-t-0 border-border bg-card px-6 py-8 shadow-soft sm:px-9 sm:py-10 md:rounded-s-none md:rounded-e-2xl md:border-s-0 md:border-t md:px-10 lg:px-12 lg:py-12">
+              <Eyebrow>{t("about.history")}</Eyebrow>
+              <h2 className="mt-4 font-serif text-3xl font-semibold tracking-tight text-foreground text-balance sm:text-4xl">{copy.historyHeading}</h2>
+              <div className="mt-6 max-w-prose space-y-5 text-sm leading-7 text-muted-foreground text-pretty sm:text-base sm:leading-8">
+                {copy.history.map((paragraph) => <p key={paragraph}>
+                  {emphasizeHistoryText(paragraph, copy.historyEmphasis, copy.founderName, locale)}
+                </p>)}
+              </div>
+            </div>
+          </div>
         </div>
-      </Section>
+      </section>
 
       <Section id="mission">
         <div className="grid gap-6 md:grid-cols-2">
@@ -125,42 +120,45 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <Section id="values" className="bg-secondary/30">
         <SectionHeading align="center" eyebrow={t("about.values")} title={t("about.valuesTitle")} />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {VALUE_KEYS.map((v, i) => (
-            <Card key={v} className="border-border">
+          {VALUES.map(({ key, icon: Icon }) => (
+            <Card key={key} className="border-border">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 font-serif text-sm font-bold text-primary">{i + 1}</span>
-                  <h3 className="font-serif text-lg font-semibold">{t(`about.value.${v}.name`)}</h3>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true"><Icon className="h-5 w-5" /></span>
+                  <h3 className="font-serif text-lg font-semibold">{t(`about.value.${key}.name`)}</h3>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(`about.value.${v}.desc`)}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(`about.value.${key}.desc`)}</p>
               </CardContent>
             </Card>
           ))}
         </div>
       </Section>
 
-      <Section id="leadership">
+      {leaders.length > 0 && <Section id="leadership">
         <SectionHeading
           eyebrow={t("about.leadership")}
           title={t("about.leadershipTitle")}
           description={t("about.leadershipDesc")}
         />
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {leaders.map((l) => (
-            <Card key={l.id} className="border-border">
-              <CardContent className="flex items-start gap-4 p-5">
-                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Users2 className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">{l.position}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("common.nameTBD")}</p>
-                </div>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {leaders.map((l) => {
+            const name = localizedField(l, "name", locale, l.name)
+            const photo = publicImage(l.photo)
+            return <Card key={l.id} className="overflow-hidden border-border transition-shadow hover:shadow-md">
+              <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/10 via-secondary to-accent/10">
+                {photo ? <ImageWithFallback src={photo} alt={l.photoAlt || name} loading="lazy" className="h-full w-full object-cover object-top" fallback={<Users2 className="h-14 w-14" aria-hidden="true" />} /> : <div className="grid h-full place-items-center text-primary/60"><Users2 className="h-14 w-14" aria-hidden="true" /></div>}
+              </div>
+              <CardContent className="p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">{localizedField(l, "position", locale, l.position)}</p>
+                <h3 className="mt-2 text-lg font-semibold leading-snug text-foreground">{name}</h3>
+                {l.department && <p className="mt-1 text-sm text-muted-foreground">{l.department}</p>}
+                {l.bio && <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{localizedField(l, "bio", locale, l.bio)}</p>}
+                {l.photoCredit && <p className="mt-3 text-xs text-muted-foreground">Photo: {l.photoCredit}</p>}
               </CardContent>
             </Card>
-          ))}
+          })}
         </div>
-      </Section>
+      </Section>}
 
       <Section id="structure" className="bg-secondary/30">
         <SectionHeading eyebrow={t("about.structure")} title={t("about.structureTitle")} />

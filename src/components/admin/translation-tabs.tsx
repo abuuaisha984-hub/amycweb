@@ -43,6 +43,7 @@ export function TranslationTabs({
         ))}
       </div>
       <div className="mt-4">{children(active)}</div>
+      <p className="mt-3 text-xs text-muted-foreground">Translations are optional. You can create an item using English, Kiswahili, or Arabic. Blank languages use the primary content.</p>
     </div>
   )
 }

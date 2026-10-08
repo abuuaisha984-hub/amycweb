@@ -2,6 +2,8 @@ import { db } from "@/lib/db"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { requireSuperAdminPage } from "@/lib/admin-page-access"
+import { AdminPagination } from "@/components/admin/admin-pagination"
 
 function fmtDateTime(d: Date) {
   return new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
@@ -17,8 +19,16 @@ const actionColor: Record<string, string> = {
   SYSTEM: "bg-muted text-muted-foreground",
 }
 
-export default async function AdminAuditPage() {
-  const logs = await db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 200 })
+export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  await requireSuperAdminPage()
+  const query = await searchParams
+  const rawPage = Array.isArray(query.page) ? query.page[0] : query.page
+  const page = Math.max(1, Math.min(100_000, Number.parseInt(rawPage || "1", 10) || 1))
+  const pageSize = 50
+  const total = await db.auditLog.count()
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const currentLogs = await db.auditLog.findMany({ orderBy: { createdAt: "desc" }, skip: (safePage - 1) * pageSize, take: pageSize })
   return (
     <div>
       <AdminPageHeader title="Audit Log" description="A record of administrative actions across the platform for accountability." />
@@ -36,7 +46,7 @@ export default async function AdminAuditPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {logs.map((l) => (
+                {currentLogs.map((l) => (
                   <tr key={l.id} className="transition hover:bg-secondary/30">
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{fmtDateTime(l.createdAt)}</td>
                     <td className="px-4 py-3 font-medium text-foreground">{l.userName}</td>
@@ -50,6 +60,7 @@ export default async function AdminAuditPage() {
           </div>
         </CardContent>
       </Card>
+      <AdminPagination page={safePage} totalPages={totalPages} />
     </div>
   )
 }

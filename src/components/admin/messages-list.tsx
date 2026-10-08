@@ -34,12 +34,18 @@ export function MessagesList({ messages: initial }: { messages: Message[] }) {
   const [messages, setMessages] = useState(initial)
 
   async function updateStatus(id: string, status: string) {
+    const previous = messages.find((message) => message.id === id)?.status
     setMessages((m) => m.map((x) => (x.id === id ? { ...x, status } : x)))
-    const res = await fetch(`/api/admin/messages/${id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
-    })
-    if (res.ok) toast.success(`Marked as ${status}.`)
-    else toast.error("Failed to update.")
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error("Update failed")
+      toast.success(`Marked as ${status}.`)
+    } catch {
+      if (previous) setMessages((m) => m.map((x) => (x.id === id ? { ...x, status: previous } : x)))
+      toast.error("Failed to update. Please try again.")
+    }
   }
 
   if (messages.length === 0) {

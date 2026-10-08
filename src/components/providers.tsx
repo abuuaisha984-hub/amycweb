@@ -1,6 +1,5 @@
 "use client"
 
-import { ThemeProvider } from "next-themes"
 import { SessionProvider } from "next-auth/react"
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 import { usePathname, useRouter } from "next/navigation"
@@ -71,10 +70,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-      <SessionProvider>
-        <LanguageProvider>{children}</LanguageProvider>
-      </SessionProvider>
-    </ThemeProvider>
+    <SessionProvider>
+      <LanguageProvider>{children}</LanguageProvider>
+    </SessionProvider>
   )
 }

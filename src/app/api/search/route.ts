@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { localizedField, isLocale, type Locale } from "@/lib/i18n"
+import { consumeRequestLimit, requestAddress } from "@/lib/request-rate-limit"
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim()
+  const address = requestAddress(req.headers)
+  const limit = consumeRequestLimit(`search:${address}`, 60, 60 * 1000)
+  if (!limit.allowed) return NextResponse.json({ results: {} }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } })
+  if (q && q.length > 120) return NextResponse.json({ error: "Search query is too long." }, { status: 400 })
   const localeParam = req.nextUrl.searchParams.get("locale") || "en"
   const locale: Locale = isLocale(localeParam) ? localeParam : "en"
+  const now = new Date()
   if (!q || q.length < 2) {
     return NextResponse.json({ results: {} })
   }
@@ -19,6 +25,8 @@ export async function GET(req: NextRequest) {
       where: {
         status: "PUBLISHED",
         deletedAt: null,
+        publishedAt: { lte: now },
+        AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] }],
         OR: [{ title: { contains: q } }, { excerpt: { contains: q } }, { content: { contains: q } }],
       },
       orderBy: { publishedAt: "desc" },
@@ -37,7 +45,7 @@ export async function GET(req: NextRequest) {
       take: 6,
     }),
     db.document.findMany({
-      where: { status: "PUBLISHED", deletedAt: null, OR: [{ title: { contains: q } }, { description: { contains: q } }, { category: { contains: q } }] },
+      where: { status: "PUBLISHED", deletedAt: null, AND: [{ OR: [{ archiveDate: null }, { archiveDate: { gt: now } }] }], OR: [{ title: { contains: q } }, { description: { contains: q } }, { category: { contains: q } }] },
       take: 6,
     }),
   ])

@@ -1,33 +1,9 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { can } from "@/lib/permissions"
 
-export type Role = "SUPER_ADMIN" | "ADMIN"
-
-/**
- * Role-Based Access Control matrix (simplified to 2 roles).
- *
- * SUPER_ADMIN — the developer / system maintainer. Full access including
- *   user management, settings, audit log, and all content operations.
- *   Can add features and perform full maintenance.
- *
- * ADMIN — the operator. Handles all day-to-day content management:
- *   news, announcements, documents, schools, regions, events, media,
- *   gallery, pages, leadership, and contact messages. Essentially
- *   everything except super-admin-only functions (user management,
- *   settings, audit log).
- */
-export const ROLE_PERMISSIONS: Record<Role, string[]> = {
-  SUPER_ADMIN: ["*"],
-  ADMIN: ["article", "event", "page", "gallery", "leader", "contact", "media", "school", "region", "document", "programme"],
-}
-
-export function can(role: string | undefined, entity: string): boolean {
-  if (!role) return false
-  const perms = ROLE_PERMISSIONS[role as Role]
-  if (!perms) return false
-  return perms.includes("*") || perms.includes(entity)
-}
+export { can, ROLE_PERMISSIONS } from "@/lib/permissions"
 
 /** Super-admin-only functions (user management, settings, audit). */
 export function isSuperAdmin(role: string | undefined): boolean {

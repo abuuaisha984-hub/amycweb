@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { PageHero } from "@/components/site/page-hero"
@@ -6,9 +7,21 @@ import { Section, Eyebrow } from "@/components/site/sections"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Globe, Building2, GraduationCap, BookOpen, ExternalLink, ShieldCheck, Info, ArrowLeft } from "lucide-react"
+import { MapPin, Globe, Building2, GraduationCap, BookOpen, Info, ArrowLeft, Mail, Phone } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { localizedField, ui, type Locale } from "@/lib/locale-page"
+import { assertPresent } from "@/lib/assert-present"
+import { publicImage } from "@/lib/public-image"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
+  const { slug, locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  const school = await db.school.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { name: true, about: true, translations: true, image: true } })
+  if (!school) return { title: "Education", robots: { index: false, follow: false } }
+  return publicPageMetadata(locale, `/education/${encodeURIComponent(slug)}`, localizedField(school, "name", locale, school.name), localizedField(school, "about", locale, school.about), publicImage(school.image))
+}
 
 function parseArr(s: string | null): string[] {
   if (!s) return []
@@ -20,6 +33,7 @@ export default async function SchoolProfilePage({ params }: { params: Promise<{ 
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
   const t = (k: string) => ui(locale, k)
   const school = await db.school.findUnique({ where: { slug } })
+  assertPresent(school)
   if (!school || school.status !== "PUBLISHED" || school.deletedAt) notFound()
 
   const facilities = parseArr(school.facilities)
@@ -29,12 +43,14 @@ export default async function SchoolProfilePage({ params }: { params: Promise<{ 
     SECONDARY: t("education.secondary"),
     PRIMARY: t("education.primary"),
     COLLEGE: t("education.college"),
+    UNIVERSITY: t("education.university"),
   }
   const name = localizedField(school, "name", locale, school.name)
   const about = localizedField(school, "about", locale, school.about)
   const history = localizedField(school, "history", locale, school.history || "")
   const category = localizedField(school, "category", locale, school.category || "")
-  const shortDescription = school.shortName || category
+  const shortDescription = localizedField(school, "shortName", locale, school.shortName || category)
+  const schoolImage = school.slug.includes("muzdalifah") ? "/images/school_muzdalifah.webp" : publicImage(school.image)
 
   return (
     <>
@@ -71,6 +87,9 @@ export default async function SchoolProfilePage({ params }: { params: Promise<{ 
       </PageHero>
 
       <Section>
+        {schoolImage && <div className="relative mb-10 aspect-[16/8] overflow-hidden rounded-2xl bg-secondary">
+          <Image src={schoolImage} alt={`${name} school building`} fill priority sizes="(max-width: 1024px) 100vw, 1200px" className="object-cover" />
+        </div>}
         <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-10">
             {/* About */}
@@ -105,8 +124,8 @@ export default async function SchoolProfilePage({ params }: { params: Promise<{ 
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 text-primary"><BookOpen className="h-4 w-4" /><h3 className="text-sm font-semibold">{t("school.category")}</h3></div>
                     <p className="mt-3 text-sm text-muted-foreground">{category || "—"}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{t("school.medium")}: {school.medium || "—"}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{t("school.gender")}: {school.gender || "—"}</p>
+                    {school.medium && <p className="mt-1 text-sm text-muted-foreground">{t("school.medium")}: {school.medium}</p>}
+                    {school.gender && <p className="mt-1 text-sm text-muted-foreground">{t("school.gender")}: {school.gender}</p>}
                   </CardContent>
                 </Card>
               </div>
@@ -133,38 +152,27 @@ export default async function SchoolProfilePage({ params }: { params: Promise<{ 
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <Card className="border-primary/15 bg-secondary/30">
+            {(school.region || school.district || school.ward || school.address) && <Card className="border-primary/15 bg-secondary/30">
               <CardContent className="p-6">
                 <h3 className="font-serif text-base font-semibold">{t("school.location")}</h3>
                 <dl className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.region")}</dt><dd className="font-medium">{school.region || t("common.toBeVerified")}</dd></div>
-                  <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.district")}</dt><dd className="font-medium">{school.district || "—"}</dd></div>
-                  <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.ward")}</dt><dd className="font-medium">{school.ward || "—"}</dd></div>
-                  <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.address")}</dt><dd className="font-medium text-end">{school.address || t("common.toBeVerified")}</dd></div>
+                  {school.region && <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.region")}</dt><dd className="font-medium">{school.region}</dd></div>}
+                  {school.district && <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.district")}</dt><dd className="font-medium">{school.district}</dd></div>}
+                  {school.ward && <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.ward")}</dt><dd className="font-medium">{school.ward}</dd></div>}
+                  {school.address && <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{t("school.address")}</dt><dd className="font-medium text-end">{school.address}</dd></div>}
                 </dl>
               </CardContent>
-            </Card>
+            </Card>}
 
-            <Card className="border-border">
+            {(school.email || school.phone) && <Card className="border-border">
               <CardContent className="p-6">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className={`h-5 w-5 ${school.verificationStatus === "VERIFIED" ? "text-emerald-600" : "text-amber-500"}`} />
-                  <h3 className="font-serif text-base font-semibold">{t("school.verification")}</h3>
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {t("school.status")}: <strong className="text-foreground">{school.verificationStatus}</strong>
-                </p>
-                {school.sourceName && <p className="mt-1 text-xs text-muted-foreground">{t("school.source")}: {school.sourceName}</p>}
-                {school.sourceUrl && (
-                  <a href={school.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                    {t("school.viewSource")} <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {t("school.locationNote")}
-                </p>
+                <h3 className="font-serif text-base font-semibold">{t("school.contact")}</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  {school.email && <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /><a href={`mailto:${school.email}`} className="hover:text-primary">{school.email}</a></li>}
+                  {school.phone && <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /><a href={`tel:${school.phone.replace(/[^+\d]/g, "")}`} className="hover:text-primary">{school.phone}</a></li>}
+                </ul>
               </CardContent>
-            </Card>
+            </Card>}
 
             <Button asChild variant="outline" className="w-full">
               <Link href={lp(locale, "/education")}><ArrowLeft className="me-1.5 h-4 w-4 rtl:rotate-180" /> {t("school.backToAll")}</Link>

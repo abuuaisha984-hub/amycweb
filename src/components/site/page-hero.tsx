@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { ChevronRight } from "lucide-react"
 import { Eyebrow } from "@/components/site/sections"
 import { cn } from "@/lib/utils"
@@ -13,6 +14,7 @@ export function PageHero({
   breadcrumbs,
   children,
   className,
+  image,
 }: {
   eyebrow?: string
   title: ReactNode
@@ -20,10 +22,12 @@ export function PageHero({
   breadcrumbs?: Crumb[]
   children?: ReactNode
   className?: string
+  image?: string | null
 }) {
   return (
     <section className={cn("relative isolate overflow-hidden border-b border-border bg-primary text-primary-foreground", className)}>
-      <div className="absolute inset-0 -z-10 bg-pattern opacity-[0.06]" />
+      {image && <Image src={image} alt="" fill sizes="100vw" className="-z-20 object-cover" priority />}
+      {image ? <div className="absolute inset-0 -z-10 bg-primary/65" /> : <div className="absolute inset-0 -z-10 bg-pattern opacity-[0.06]" />}
       <div className="absolute inset-x-0 bottom-0 -z-10 h-px gold-rule opacity-60" />
       <div className="container-institutional py-12 sm:py-16">
         {breadcrumbs && breadcrumbs.length > 0 && (

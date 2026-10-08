@@ -3,25 +3,30 @@ import Image from "next/image"
 import { db } from "@/lib/db"
 import { PageHero } from "@/components/site/page-hero"
 import { Section } from "@/components/site/sections"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Newspaper, ArrowRight } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { localizedField, ui, formatDate, type Locale } from "@/lib/locale-page"
+import { publicImage } from "@/lib/public-image"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
 
-export default async function NewsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ kind?: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  return publicPageMetadata(locale, "/news", ui(locale, "news.title"), ui(locale, "news.desc"))
+}
+
+export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeStr } = await params
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
   const t = (k: string) => ui(locale, k)
-  const sp = await searchParams
-  const kind = sp.kind === "ANNOUNCEMENT" ? "ANNOUNCEMENT" : sp.kind === "NEWS" ? "NEWS" : "ALL"
   const now = new Date()
   const where = {
     status: "PUBLISHED" as const,
     deletedAt: null,
     publishedAt: { lte: now },
     AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] }],
-    ...(kind !== "ALL" ? { kind } : {}),
   }
   const articles = await db.article.findMany({ where, orderBy: { publishedAt: "desc" } })
   const featured = articles.find((a) => a.featured) || articles[0]
@@ -36,39 +41,20 @@ export default async function NewsPage({ params, searchParams }: { params: Promi
         breadcrumbs={[{ label: t("common.home"), href: lp(locale, "/") }, { label: t("news.title") }]}
       />
       <Section>
-        {/* Filter tabs */}
-        <div className="mb-8 flex flex-wrap gap-2">
-          {[
-            { k: "ALL", label: t("news.all") },
-            { k: "NEWS", label: t("news.news") },
-            { k: "ANNOUNCEMENT", label: t("news.announcements") },
-          ].map((tab) => (
-            <Button
-              key={tab.k}
-              asChild
-              size="sm"
-              variant={kind === tab.k ? "default" : "outline"}
-              className={kind === tab.k ? "bg-primary" : ""}
-            >
-              <Link href={tab.k === "ALL" ? lp(locale, "/news") : lp(locale, `/news?kind=${tab.k}`)}>{tab.label}</Link>
-            </Button>
-          ))}
-        </div>
-
         {featured && (
           <Link
             href={lp(locale, `/news/${featured.slug}`)}
             className="group mb-10 grid overflow-hidden rounded-2xl border border-border bg-card lg:grid-cols-2"
           >
             <div className="relative aspect-[16/10] overflow-hidden bg-primary/5 lg:aspect-auto">
-              {featured.featuredImage ? (
-                <Image src={featured.featuredImage} alt={featured.title} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
+              {publicImage(featured.featuredImage) ? (
+                <Image src={publicImage(featured.featuredImage)!} alt={featured.title} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
               ) : (
                 <div className="flex h-full items-center justify-center bg-pattern-dense text-primary/30"><Newspaper className="h-16 w-16" /></div>
               )}
               <div className="absolute start-4 top-4 flex gap-2 rtl:left-auto rtl:right-4">
                 <Badge className="bg-accent text-accent-foreground hover:bg-accent">{t("news.featured")}</Badge>
-                <Badge variant="secondary">{featured.kind === "ANNOUNCEMENT" ? t("news.announcements") : t("news.news")}</Badge>
+                <Badge variant="secondary">{t("news.news")}</Badge>
               </div>
             </div>
             <div className="flex flex-col justify-center p-8">
@@ -91,13 +77,13 @@ export default async function NewsPage({ params, searchParams }: { params: Promi
               className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card"
             >
               <div className="relative aspect-[16/10] overflow-hidden bg-primary/5">
-                {a.featuredImage ? (
-                  <Image src={a.featuredImage} alt={a.title} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
+                {publicImage(a.featuredImage) ? (
+                  <Image src={publicImage(a.featuredImage)!} alt={a.title} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-pattern-dense text-primary/30"><Newspaper className="h-10 w-10" /></div>
                 )}
                 <div className="absolute end-3 top-3 rtl:left-auto rtl:right-3">
-                  <Badge variant="secondary" className="text-[0.65rem]">{a.kind === "ANNOUNCEMENT" ? t("news.announcements") : t("news.news")}</Badge>
+                  <Badge variant="secondary" className="text-[0.65rem]">{t("news.news")}</Badge>
                 </div>
               </div>
               <div className="flex flex-1 flex-col p-5">

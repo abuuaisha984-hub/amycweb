@@ -9,10 +9,26 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Globe, Mail, Phone, Users2, Activity, ArrowLeft } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { localizedField, ui, type Locale } from "@/lib/locale-page"
+import { assertPresent } from "@/lib/assert-present"
+import { publicImage } from "@/lib/public-image"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
+  const { slug, locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  const region = await db.region.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { name: true, overview: true, translations: true, image: true } })
+  if (!region) return { title: "Regions", robots: { index: false, follow: false } }
+  return publicPageMetadata(locale, `/regions/${encodeURIComponent(slug)}`, localizedField(region, "name", locale, region.name), localizedField(region, "overview", locale, region.overview), publicImage(region.image))
+}
 
 function parseArr<T = any>(s: string | null): T[] {
   if (!s) return []
   try { return JSON.parse(s) as T[] } catch { return [] }
+}
+function localizedArray<T = any>(raw: string | null, translations: string, locale: Locale, field: string): T[] {
+  try { const value = JSON.parse(translations || "{}")?.[locale]?.[field]; if (Array.isArray(value)) return value as T[] } catch {}
+  return parseArr<T>(raw)
 }
 
 export default async function RegionPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
@@ -20,22 +36,25 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
   const t = (k: string) => ui(locale, k)
   const region = await db.region.findUnique({ where: { slug } })
+  assertPresent(region)
   if (!region || region.status !== "PUBLISHED" || region.deletedAt) notFound()
 
-  const leadership = parseArr<{ position: string; name: string }>(region.leadership)
-  const activities = parseArr<string>(region.activities)
-  const branches = parseArr<{ name: string; note?: string }>(region.branches)
+  const leadership = localizedArray<{ position: string; name: string }>(region.leadership, region.translations, locale, "leadership")
+  const regionalLeaders = await db.leader.findMany({ where: { category: "REGIONAL", regionId: region.id, status: "ACTIVE", deletedAt: null }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] })
+  const activities = localizedArray<string>(region.activities, region.translations, locale, "activities")
+  const branches = localizedArray<{ name: string; note?: string }>(region.branches, region.translations, locale, "branches")
   const name = localizedField(region, "name", locale, region.name)
   const overview = localizedField(region, "overview", locale, region.overview)
+  const displayOverview = overview.startsWith("This Jimbo is listed in the AMYC directory.") ? "" : overview
   const history = localizedField(region, "history", locale, region.history || "")
-  const heroDescription = region.englishName ? `${t("region.englishLabel")}: ${region.englishName}` : overview
+  const image = publicImage(region.image)
 
   return (
     <>
       <PageHero
         eyebrow={t("region.jimbo")}
         title={name}
-        description={heroDescription}
+        description={displayOverview || undefined}
         breadcrumbs={[{ label: t("common.home"), href: lp(locale, "/") }, { label: t("nav.regions"), href: lp(locale, "/regions") }, { label: name }]}
       >
         {region.website && (
@@ -50,10 +69,10 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
       <Section>
         <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-10">
-            <div>
+            {displayOverview && <div>
               <Eyebrow>{t("region.overview")}</Eyebrow>
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground text-pretty">{overview}</p>
-            </div>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground text-pretty">{displayOverview}</p>
+            </div>}
 
             {region.history && (
               <div>
@@ -89,11 +108,18 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
               </div>
             )}
 
-            {leadership.length > 0 && (
+            {(regionalLeaders.length > 0 || leadership.length > 0) && (
               <div>
                 <Eyebrow>{t("region.leadership")}</Eyebrow>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {leadership.map((l, i) => (
+                  {regionalLeaders.length > 0 ? regionalLeaders.map((leader) => (
+                    <Card key={leader.id} className="border-border">
+                      <CardContent className="flex items-center gap-3 p-4">
+                        {publicImage(leader.photo) ? <img src={publicImage(leader.photo)!} alt={leader.photoAlt || localizedField(leader, "name", locale, leader.name)} className="h-10 w-10 shrink-0 rounded-full object-cover" /> : <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Users2 className="h-4 w-4" /></span>}
+                        <div><p className="text-xs text-muted-foreground">{localizedField(leader, "position", locale, leader.position)}</p><p className="text-sm font-semibold text-foreground">{localizedField(leader, "name", locale, leader.name)}</p></div>
+                      </CardContent>
+                    </Card>
+                  )) : leadership.map((l, i) => (
                     <Card key={i} className="border-border">
                       <CardContent className="flex items-center gap-3 p-4">
                         <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -107,23 +133,34 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
                     </Card>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground">{t("region.leadershipNote")}</p>
               </div>
             )}
           </div>
 
           <div className="space-y-4">
-            <Card className="border-primary/15 bg-secondary/30">
+            {image && <figure className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <img src={image} alt={name} className="aspect-[4/3] w-full object-cover" />
+              <figcaption className="px-4 py-3 text-sm font-medium text-foreground">{name}</figcaption>
+            </figure>}
+            {(region.administrativeRegion || region.district) && <Card className="border-primary/15 bg-secondary/30">
+              <CardContent className="p-6">
+                <h3 className="font-serif text-base font-semibold">{t("school.location")}</h3>
+                <dl className="mt-4 space-y-2 text-sm">
+                  {region.administrativeRegion && <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{t("region.administrativeRegion")}</dt><dd className="text-end font-medium">{region.administrativeRegion}</dd></div>}
+                  {region.district && <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{t("region.district")}</dt><dd className="text-end font-medium">{region.district}</dd></div>}
+                </dl>
+              </CardContent>
+            </Card>}
+            {(region.contact || region.email || region.phone) && <Card className="border-primary/15 bg-secondary/30">
               <CardContent className="p-6">
                 <h3 className="font-serif text-base font-semibold">{t("region.contact")}</h3>
                 <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                   {region.contact && <li>{region.contact}</li>}
                   {region.email && <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> {region.email}</li>}
                   {region.phone && <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {region.phone}</li>}
-                  {!region.contact && !region.email && !region.phone && <li className="text-xs">{t("region.contactNote")}</li>}
                 </ul>
               </CardContent>
-            </Card>
+            </Card>}
             <Button asChild variant="outline" className="w-full">
               <Link href={lp(locale, "/regions")}><ArrowLeft className="me-1.5 h-4 w-4 rtl:rotate-180" /> {t("region.backToAll")}</Link>
             </Button>

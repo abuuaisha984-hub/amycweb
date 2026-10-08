@@ -1,0 +1,9 @@
+ALTER TABLE "School" ADD COLUMN "sources" TEXT NOT NULL DEFAULT '[]';
+
+ALTER TABLE "Region" ADD COLUMN "administrativeRegion" TEXT;
+ALTER TABLE "Region" ADD COLUMN "district" TEXT;
+ALTER TABLE "Region" ADD COLUMN "locationVerificationStatus" TEXT NOT NULL DEFAULT 'UNVERIFIED';
+ALTER TABLE "Region" ADD COLUMN "sourceUrl" TEXT;
+ALTER TABLE "Region" ADD COLUMN "sourceName" TEXT;
+ALTER TABLE "Region" ADD COLUMN "sources" TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE "Region" ADD COLUMN "dateVerified" DATETIME;

@@ -3,13 +3,25 @@ import { db } from "@/lib/db"
 import { PageHero } from "@/components/site/page-hero"
 import { Section } from "@/components/site/sections"
 import { localizedField, ui, type Locale } from "@/lib/locale-page"
+import { assertPresent } from "@/lib/assert-present"
 import { lp } from "@/components/site/nav-config"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
+  const { slug, locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  const page = await db.page.findFirst({ where: { slug, status: "PUBLISHED" }, select: { title: true, excerpt: true, content: true, translations: true } })
+  if (!page) return { title: "Information", robots: { index: false, follow: false } }
+  return publicPageMetadata(locale, `/info/${encodeURIComponent(slug)}`, localizedField(page, "title", locale, page.title), localizedField(page, "excerpt", locale, page.excerpt || page.content.slice(0, 220)))
+}
 
 export default async function StaticPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale: localeStr } = await params
   const locale = (localeStr === "sw" || localeStr === "ar" ? localeStr : "en") as Locale
   const t = (k: string) => ui(locale, k)
   const page = await db.page.findUnique({ where: { slug } })
+  assertPresent(page)
   if (!page || page.status !== "PUBLISHED") notFound()
   const title = localizedField(page, "title", locale, page.title)
   const excerpt = page.excerpt ? localizedField(page, "excerpt", locale, page.excerpt) : ""

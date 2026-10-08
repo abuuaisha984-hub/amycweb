@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button"
 import { FileText, Download, CalendarDays, User } from "lucide-react"
 import { lp } from "@/components/site/nav-config"
 import { ui, formatDate, type Locale } from "@/lib/locale-page"
+import type { Metadata } from "next"
+import { publicPageMetadata } from "@/lib/seo"
+import { publicAssetUrl } from "@/lib/public-asset-url"
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale: value } = await params
+  const locale = value === "sw" || value === "ar" ? value : "en"
+  return publicPageMetadata(locale, "/documents", ui(locale, "documents.title"), ui(locale, "documents.desc"))
+}
 
 export default async function DocumentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ category?: string }> }) {
   const { locale: localeStr } = await params
@@ -15,12 +24,13 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
   const t = (k: string) => ui(locale, k)
   const sp = await searchParams
   const category = sp.category
-  const where = { status: "PUBLISHED" as const, deletedAt: null, ...(category ? { category } : {}) }
-  const [documents, allDocs] = await Promise.all([
-    db.document.findMany({ where, orderBy: { publishedAt: "desc" } }),
-    db.document.findMany({ where: { status: "PUBLISHED", deletedAt: null } }),
+  const [activeCategories, allDocs] = await Promise.all([
+    db.category.findMany({ where: { type: "DOCUMENT", active: true }, orderBy: { name: "asc" }, select: { name: true } }),
+    db.document.findMany({ where: { status: "PUBLISHED", deletedAt: null, OR: [{ archiveDate: null }, { archiveDate: { gt: new Date() } }] }, orderBy: { publishedAt: "desc" } }),
   ])
-  const categories = Array.from(new Set(allDocs.map((d) => d.category))).sort()
+  const categories = activeCategories.map((item) => item.name)
+  const allowedDocuments = allDocs.filter((document) => categories.includes(document.category))
+  const documents = allowedDocuments.filter((document) => !category || document.category === category)
 
   return (
     <>
@@ -63,7 +73,7 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
                   </div>
                   {d.author && <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" />{d.author}</p>}
                   <a
-                    href={d.filePath}
+                    href={publicAssetUrl(d.filePath)}
                     download
                     className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-primary-foreground"
                   >
