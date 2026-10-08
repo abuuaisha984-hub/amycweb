@@ -3,7 +3,11 @@ import { getToken } from "next-auth/jwt"
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server"
 import { canAccessAdminPath } from "@/lib/permissions"
 
+// Keep proxy token lookup aligned with the custom session cookie in auth.ts.
+const sessionCookieName = "next-auth.session-token"
+
 const protectAdmin = withAuth({
+  cookies: { sessionToken: { name: sessionCookieName } },
   callbacks: {
     authorized: ({ token, req }) => {
       const path = req.nextUrl.pathname
@@ -19,7 +23,11 @@ const protectAdmin = withAuth({
 export async function proxy(req: NextRequest, event: NextFetchEvent) {
   const path = req.nextUrl.pathname
   if (path.startsWith("/admin")) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: sessionCookieName,
+    })
     if (token?.mustChangePassword && path !== "/admin/account/password" && path !== "/admin/login") {
       return NextResponse.redirect(new URL("/admin/account/password", req.url))
     }
