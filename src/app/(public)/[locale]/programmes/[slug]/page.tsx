@@ -13,6 +13,7 @@ import { localizedField, ui, type Locale } from "@/lib/locale-page"
 import { parseTranslations } from "@/lib/i18n"
 import { assertPresent } from "@/lib/assert-present"
 import { publicImage } from "@/lib/public-image"
+import { collectProgrammeGalleryImages } from "@/lib/programme-gallery"
 import { publicPageMetadata } from "@/lib/seo"
 
 const ICONS: Record<string, typeof Sparkles> = {
@@ -49,8 +50,8 @@ export default async function ProgrammePage({ params }: PageProps) {
   })
   const translations = parseTranslations(programme.translations)
   const localizedContent = translations[locale] || {}
-  const translatedGallery = Array.isArray(translations.galleryImages) ? translations.galleryImages : []
-  const heroImagePath = programme.image || translatedGallery[0]
+  const galleryImagePaths = collectProgrammeGalleryImages(programme.image, translations, locale)
+  const heroImagePath = programme.image || galleryImagePaths[0]
   const heroImage = publicImage(heroImagePath || programme.image)
   const name = localizedField(programme, "name", locale, programme.name)
   const shortDescription = localizedField(programme, "shortDescription", locale, programme.shortDescription)
@@ -61,8 +62,7 @@ export default async function ProgrammePage({ params }: PageProps) {
       heading: index === 0 ? t("programmes.aboutProgramme") : index === 1 ? t("programmes.delivery") : t("programmes.community"),
       content: content.trim(),
     }))
-  const images = [...new Set([programme.image, ...translatedGallery]
-    .filter((image: unknown): image is string => typeof image === "string" && image.length > 0))]
+  const images = galleryImagePaths
     .map((image) => publicImage(image))
     .filter((image: string | null): image is string => Boolean(image))
   const Icon = ICONS[programme.slug] || Sparkles

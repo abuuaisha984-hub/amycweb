@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getAdminPageSession } from "@/lib/admin-page-session"
 import { redirect } from "next/navigation"
 import { AdminShell } from "@/components/admin/shell"
 import { assertPresent } from "@/lib/assert-present"
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions)
+  const session = await getAdminPageSession()
   if (!session?.user) redirect("/admin/login")
   assertPresent(session)
   assertPresent(session.user)

@@ -1,13 +1,12 @@
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { DocumentsManager } from "@/components/admin/documents-manager"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getAdminPageSession } from "@/lib/admin-page-session"
 import { canRead } from "@/lib/permissions"
 import { Card, CardContent } from "@/components/ui/card"
 import { Lock } from "lucide-react"
 
 export default async function AdminDocumentsPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getAdminPageSession()
   if (!canRead(session?.user?.role, "document")) {
     return (
       <div>

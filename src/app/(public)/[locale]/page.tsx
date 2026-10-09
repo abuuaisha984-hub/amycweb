@@ -20,7 +20,8 @@ import { publicPageMetadata, SITE_ORIGIN } from "@/lib/seo"
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: value } = await params
   const locale = value === "sw" || value === "ar" ? value : "en"
-  return publicPageMetadata(locale, "/", ui(locale, "home.whoWeAre.title"), "Ansaar Muslim Youth Centre serves communities in Tanzania through education, da'wah, youth development and community services.")
+  const metadata = publicPageMetadata(locale, "/", "Ansaar Muslim Youth Centre", "Ansaar Muslim Youth Centre serves communities in Tanzania through education, da'wah, youth development and community services.")
+  return { ...metadata, title: { absolute: "Ansaar Muslim Youth Centre" } }
 }
 
 // Stat key → UI label key mapping

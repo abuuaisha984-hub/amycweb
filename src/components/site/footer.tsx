@@ -3,24 +3,8 @@ import { AmycLogo } from "@/components/site/logo"
 import { FOOTER_QUICK, FOOTER_LEGAL, lp } from "@/components/site/nav-config"
 import { db } from "@/lib/db"
 import { ui, type Locale } from "@/lib/i18n"
-import { setting } from "@/lib/locale-page"
+import { getSettings, setting } from "@/lib/locale-page"
 import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react"
-
-async function getFooterData() {
-  const [socials, settings] = await Promise.all([
-    db.socialLink.findMany({ orderBy: { sortOrder: "asc" } }),
-    db.siteSetting.findMany(),
-  ])
-  const map: Record<string, any> = {}
-  for (const s of settings) {
-    try {
-      map[s.key] = JSON.parse(s.value)
-    } catch {
-      map[s.key] = s.value
-    }
-  }
-  return { socials, settings: map }
-}
 
 const SOCIAL_ICONS: Record<string, string> = {
   Facebook: "M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12Z",
@@ -33,7 +17,10 @@ const SOCIAL_ICONS: Record<string, string> = {
 }
 
 export async function SiteFooter({ locale }: { locale: Locale }) {
-  const { socials, settings } = await getFooterData()
+  const [socials, settings] = await Promise.all([
+    db.socialLink.findMany({ orderBy: { sortOrder: "asc" } }),
+    getSettings(),
+  ])
   const orgName = settings.orgName || "Ansaar Muslim Youth Centre"
   const tagline = setting(settings, "tagline", locale)
   const email = settings.email || "info@amyc.or.tz"
@@ -158,6 +145,13 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           <p className="text-xs text-primary-foreground/50">
             {ui(locale, "footer.tagline")} · Tanga, Tanzania
           </p>
+        </div>
+      </div>
+      <div className="border-t border-primary-foreground/10">
+        <div className="container-institutional flex flex-col items-center justify-center gap-1 py-3 text-center text-xs text-primary-foreground/55 sm:flex-row sm:gap-2">
+          <span>Crafted by MakalaTech</span>
+          <span className="hidden sm:inline" aria-hidden="true">·</span>
+          <span>Email: <a href="mailto:abuunuhail@gmail.com?subject=Website%20Inquiry%20-%20AMYC%20HQ" className="underline-offset-2 transition hover:text-primary-foreground hover:underline">abuunuhail@gmail.com</a></span>
         </div>
       </div>
     </footer>

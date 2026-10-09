@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation"
-import { getServerSession } from "next-auth"
+import { getAdminPageSession } from "@/lib/admin-page-session"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { VisitorTrendChart, type VisitorTrendPoint } from "@/components/admin/visitor-trend-chart"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { authOptions } from "@/lib/auth"
 import { canRead } from "@/lib/permissions"
 import { db } from "@/lib/db"
 import { Eye, Globe2, MapPinned, MousePointerClick, UsersRound } from "lucide-react"
@@ -119,7 +118,7 @@ function DataTable({ title, description, headers, rows, empty, className = "" }:
 }
 
 export default async function VisitorAnalyticsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const session = await getServerSession(authOptions)
+  const session = await getAdminPageSession()
   if (!canRead(session?.user?.role, "analytics")) notFound()
   const query = await searchParams
   const one = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value

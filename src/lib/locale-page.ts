@@ -1,10 +1,11 @@
+import { cache } from "react"
 import { db } from "@/lib/db"
 import { localizedField, ui, formatDate, type Locale } from "@/lib/i18n"
 
 /**
  * Load site settings as a parsed object.
  */
-export async function getSettings(): Promise<Record<string, any>> {
+export const getSettings = cache(async (): Promise<Record<string, any>> => {
   const rows = await db.siteSetting.findMany()
   const map: Record<string, any> = {}
   for (const s of rows) {
@@ -15,7 +16,7 @@ export async function getSettings(): Promise<Record<string, any>> {
     }
   }
   return map
-}
+})
 
 /**
  * Resolve a localized setting value.

@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getAdminPageSession } from "@/lib/admin-page-session"
 import { isSuperAdmin } from "@/lib/rbac"
 import { canRead } from "@/lib/permissions"
 import { AdminPageHeader } from "@/components/admin/page-header"
@@ -23,7 +22,7 @@ function countryName(code: string) {
 }
 
 export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions)
+  const session = await getAdminPageSession()
   const role = session?.user?.role
   const canViewArticles = canRead(role, "article")
   const canViewSchools = canRead(role, "school")
