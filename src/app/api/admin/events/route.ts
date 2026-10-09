@@ -3,7 +3,7 @@ import { z } from "zod"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 
 const eventSchema = z.object({
   title: z.string().trim().min(2).max(220),
@@ -20,15 +20,15 @@ const eventSchema = z.object({
 
 const optional = (value: string | null | undefined) => value?.trim() || null
 
-async function authorize() {
+async function authorize(access: "read" | "write" = "write") {
   const session = await getServerSession(authOptions)
   if (!session?.user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }
-  if (!can(session.user.role, "event")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
+  if (access === "read" ? !canRead(session.user.role, "event") : !can(session.user.role, "event")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
   return { session }
 }
 
 export async function GET() {
-  const auth = await authorize()
+  const auth = await authorize("read")
   if ("response" in auth) return auth.response
   const events = await db.event.findMany({ where: { deletedAt: null }, orderBy: [{ startDate: "desc" }, { createdAt: "desc" }] })
   return NextResponse.json({ events })

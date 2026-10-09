@@ -302,3 +302,13 @@ html {
 }
 
 /* Back to top floating button transition handled inline */
+/* Super Admin oversight mode hides mutation controls in manager components.
+   Read filters, links, downloads and report controls remain available. */
+[data-admin-readonly="true"] button:has(svg.lucide-plus),
+[data-admin-readonly="true"] button:has(svg.lucide-pencil),
+[data-admin-readonly="true"] button:has(svg.lucide-trash-2),
+[data-admin-readonly="true"] button:has(svg.lucide-archive),
+[data-admin-readonly="true"] button:has(svg.lucide-save),
+[data-admin-readonly="true"] input[type="file"] {
+  display: none !important;
+}

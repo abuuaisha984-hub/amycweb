@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 import { randomBytes } from "crypto"
 import { matchesFileSignature } from "@/lib/file-signature"
 import { storePublicUpload, deletePublicUpload } from "@/lib/upload-storage"
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (!can(session.user.role, "document")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!canRead(session.user.role, "document")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const requestedPage = Math.max(1, Math.min(100_000, Number.parseInt(req.nextUrl.searchParams.get("page") || "1", 10) || 1))
   const pageSize = 25
   const where = { deletedAt: null }

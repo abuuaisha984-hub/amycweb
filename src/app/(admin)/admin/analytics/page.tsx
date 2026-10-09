@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/page-header"
 import { VisitorTrendChart, type VisitorTrendPoint } from "@/components/admin/visitor-trend-chart"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import { can } from "@/lib/permissions"
+import { canRead } from "@/lib/permissions"
 import { db } from "@/lib/db"
 import { Eye, Globe2, MapPinned, MousePointerClick, UsersRound } from "lucide-react"
 
@@ -120,13 +120,28 @@ function DataTable({ title, description, headers, rows, empty, className = "" }:
 
 export default async function VisitorAnalyticsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await getServerSession(authOptions)
-  if (!can(session?.user?.role, "analytics")) notFound()
+  if (!canRead(session?.user?.role, "analytics")) notFound()
   const query = await searchParams
   const one = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value
   const selected = resolveRange(one(query.range), one(query.from), one(query.to))
   const eventWhere = { createdAt: { gte: selected.start, lt: selected.end } }
   const visitorWhere = { lastVisitedAt: { gte: selected.start, lt: selected.end } }
   const currentMonthStart = darStart(`${localDateString(new Date()).slice(0, 7)}-01`)
+  const trendRowsQuery = process.env.DATABASE_URL?.startsWith("postgres")
+    ? db.$queryRaw<Array<{ bucket: string; visitors: bigint; pageViews: bigint }>>`
+        SELECT TO_CHAR("createdAt" + INTERVAL '3 hours', ${selected.monthly ? "YYYY-MM" : "YYYY-MM-DD"}) AS "bucket",
+          COUNT(DISTINCT "visitorId") AS "visitors", COUNT(*) AS "pageViews"
+        FROM "VisitEvent"
+        WHERE "createdAt" >= ${selected.start} AND "createdAt" < ${selected.end}
+        GROUP BY "bucket" ORDER BY "bucket" ASC
+      `
+    : db.$queryRaw<Array<{ bucket: string; visitors: bigint; pageViews: bigint }>>`
+        SELECT strftime(${selected.monthly ? "%Y-%m" : "%Y-%m-%d"}, datetime("createdAt", '+3 hours')) AS "bucket",
+          COUNT(DISTINCT "visitorId") AS "visitors", COUNT(*) AS "pageViews"
+        FROM "VisitEvent"
+        WHERE "createdAt" >= ${selected.start} AND "createdAt" < ${selected.end}
+        GROUP BY "bucket" ORDER BY "bucket" ASC
+      `
   const [totalVisitors, totalPageViews, trackedPageViews, visitorsToday, visitorsWeek, visitorsMonth, selectedVisitors, selectedPageViews, pages, referrers, countries, domesticVisitors, internationalVisitors, regions, cities, trendRows] = await Promise.all([
     db.visitor.count(),
     db.visitEvent.count(),
@@ -155,13 +170,7 @@ export default async function VisitorAnalyticsPage({ searchParams }: { searchPar
         AND "country" = 'TZ' AND "city" != 'Unknown' AND "visitorId" IS NOT NULL
       GROUP BY "city" ORDER BY COUNT(DISTINCT "visitorId") DESC LIMIT 10
     `,
-    db.$queryRaw<Array<{ bucket: string; visitors: bigint; pageViews: bigint }>>`
-      SELECT strftime(${selected.monthly ? "%Y-%m" : "%Y-%m-%d"}, datetime("createdAt", '+3 hours')) AS "bucket",
-        COUNT(DISTINCT "visitorId") AS "visitors", COUNT(*) AS "pageViews"
-      FROM "VisitEvent"
-      WHERE "createdAt" >= ${selected.start} AND "createdAt" < ${selected.end}
-      GROUP BY "bucket" ORDER BY "bucket" ASC
-    `,
+    trendRowsQuery,
   ])
 
   const sourceTotals = new Map<string, number>()

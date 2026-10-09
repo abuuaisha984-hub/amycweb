@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth"
 import { notFound, redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
-import { can } from "@/lib/permissions"
+import { canRead } from "@/lib/permissions"
 
 export async function requireAdminPermission(...permissions: string[]) {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/admin/login")
-  if (!permissions.some((permission) => can(session.user.role, permission))) notFound()
+  if (!permissions.some((permission) => canRead(session.user.role, permission))) notFound()
   return session
 }
 

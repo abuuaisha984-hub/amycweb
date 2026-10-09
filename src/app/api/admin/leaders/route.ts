@@ -3,7 +3,7 @@ import { z } from "zod"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 
 const schema = z.object({
   name: z.string().trim().min(1, "Enter the leader's name.").max(500, "The leader name is too long."),
@@ -28,7 +28,7 @@ function validationError(error: z.ZodError) {
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (!can(session.user.role, "leader")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!canRead(session.user.role, "leader")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const where = { deletedAt: null, ...(session.user.role === "REGIONAL_EDITOR" ? { category: "REGIONAL", regionId: session.user.scopeRegionId || "" } : {}) }
   const [leaders, regions] = await Promise.all([
     db.leader.findMany({ where, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),

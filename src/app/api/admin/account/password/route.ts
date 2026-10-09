@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const user = await db.user.findUnique({ where: { id: session.user.id }, select: { id: true, email: true, name: true, passwordHash: true } })
   if (!user || !verifyPassword(parsed.data.currentPassword, user.passwordHash)) return NextResponse.json({ error: "Current password is incorrect." }, { status: 400 })
   if (verifyPassword(parsed.data.newPassword, user.passwordHash)) return NextResponse.json({ error: "Choose a password different from your current one." }, { status: 400 })
-  await db.user.update({ where: { id: user.id }, data: { passwordHash: hashPassword(parsed.data.newPassword), mustChangePassword: false } })
+  await db.user.update({ where: { id: user.id }, data: { passwordHash: hashPassword(parsed.data.newPassword), mustChangePassword: false, authVersion: { increment: 1 } } })
   await writeAudit({ userId: user.id, userName: user.name, action: "UPDATE", entity: "User", entityId: user.id, detail: "Changed account password", ip: request.headers.get("x-forwarded-for")?.split(",")[0] })
   return NextResponse.json({ success: true })
 }

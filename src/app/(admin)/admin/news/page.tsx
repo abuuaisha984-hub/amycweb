@@ -2,14 +2,14 @@ import { AdminPageHeader } from "@/components/admin/page-header"
 import { NewsManager } from "@/components/admin/news-manager"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { can } from "@/lib/rbac"
+import { canRead } from "@/lib/permissions"
 import { Card, CardContent } from "@/components/ui/card"
 import { Lock } from "lucide-react"
 import { db } from "@/lib/db"
 
 export default async function AdminNewsPage() {
   const session = await getServerSession(authOptions)
-  if (!can(session?.user?.role, "article")) {
+  if (!canRead(session?.user?.role, "article")) {
     return (
       <div>
         <AdminPageHeader title="News" description="You do not have permission to manage articles." />
@@ -35,7 +35,7 @@ export default async function AdminNewsPage() {
         title="News"
         description="Create, edit and manage institutional news. Items with an expiry date are archived automatically."
       />
-      <NewsManager role={session?.user?.role || ""} regions={regions} />
+      <NewsManager role={session?.user?.role || ""} regions={regions} readOnly={session?.user?.role === "SUPER_ADMIN"} />
     </div>
   )
 }

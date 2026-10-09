@@ -16,12 +16,13 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { TranslationTabs, getTrField, setTrField } from "@/components/admin/translation-tabs"
 import { toast } from "sonner"
-import { Plus, Pencil, Trash2, Loader2, Newspaper, Search, Bold, Italic, Heading2, List, Link as LinkIcon, Quote } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, Newspaper, Search, Bold, Italic, Heading2, List, Link as LinkIcon, Quote, Eye } from "lucide-react"
 import { ARTICLE_STATUSES } from "@/components/admin/nav-config"
 import { type Locale } from "@/lib/i18n"
 import { allowedArticleTransitions, type ArticleWorkflowStatus } from "@/lib/article-workflow"
 import { AdminImageUpload } from "@/components/admin/image-upload"
 import { AdminPageControls } from "@/components/admin/admin-page-controls"
+import { ReadOnlyRecordDialog } from "@/components/admin/read-only-record-dialog"
 
 type Article = {
   id: string
@@ -60,7 +61,7 @@ function parseTr(raw: string | null): Record<string, any> {
   try { return JSON.parse(raw) } catch { return {} }
 }
 
-export function NewsManager({ role, regions }: { role: string; regions: Array<{ id: string; name: string }> }) {
+export function NewsManager({ role, regions, readOnly = false }: { role: string; regions: Array<{ id: string; name: string }>; readOnly?: boolean }) {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState("")
@@ -68,6 +69,7 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [editing, setEditing] = useState<Article | null>(null)
+  const [viewing, setViewing] = useState<Article | null>(null)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<any>(EMPTY)
   const [tr, setTr] = useState<Record<string, any>>({})
@@ -244,7 +246,7 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
   }
 
   return (
-    <div>
+    <div data-admin-readonly={readOnly ? "true" : undefined}>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -257,7 +259,7 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
             {ARTICLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button onClick={openNew} className="bg-primary h-10"><Plus className="mr-1.5 h-4 w-4" /> New Article</Button>
+        {!readOnly && <Button onClick={openNew} className="bg-primary h-10"><Plus className="mr-1.5 h-4 w-4" /> New Article</Button>}
       </div>
 
       <Card>
@@ -299,14 +301,14 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
                         </td>
                         <td className="px-4 py-3"><Badge variant="outline" className="text-[0.65rem]">News</Badge></td>
                         <td className="px-4 py-3">
-                          <Select value={a.status} onValueChange={(v) => quickStatus(a, v)}>
+                          {readOnly ? <Badge className={`${statusColor[a.status]} text-[0.65rem]`} variant="secondary">{a.status}</Badge> : <Select value={a.status} onValueChange={(v) => quickStatus(a, v)}>
                             <SelectTrigger className="h-7 w-[120px] border-0 p-0">
                               <Badge className={`${statusColor[a.status]} text-[0.65rem]`} variant="secondary">{a.status}</Badge>
                             </SelectTrigger>
                             <SelectContent>
                               {[a.status, ...allowedArticleTransitions(a.status)].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                             </SelectContent>
-                          </Select>
+                          </Select>}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem] font-bold ${ts.sw ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>{ts.sw ? "✓" : "—"}</span>
@@ -317,8 +319,9 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
                         <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(a.publishedAt)}</td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(a)} aria-label={`Delete ${a.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            {readOnly && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewing(a)} aria-label={`View ${a.title}`}><Eye className="h-3.5 w-3.5" /></Button>}
+                            {!readOnly && <><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(a)} aria-label={`Delete ${a.title}`}><Trash2 className="h-3.5 w-3.5" /></Button></>}
                           </div>
                         </td>
                       </tr>
@@ -331,9 +334,10 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
         </CardContent>
       </Card>
       <AdminPageControls page={page} totalPages={totalPages} onPageChange={setPage} />
+      <ReadOnlyRecordDialog title={viewing?.title || "News item"} record={viewing as unknown as Record<string, unknown> | null} onOpenChange={(open) => { if (!open) setViewing(null) }} />
 
       {/* Editor dialog with translation tabs */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      {!readOnly && <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Article" : "New Article"}</DialogTitle>
@@ -486,7 +490,7 @@ export function NewsManager({ role, regions }: { role: string; regions: Array<{ 
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog>}
     </div>
   )
 }

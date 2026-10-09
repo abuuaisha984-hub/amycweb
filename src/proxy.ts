@@ -11,7 +11,7 @@ const protectAdmin = withAuth({
   callbacks: {
     authorized: ({ token, req }) => {
       const path = req.nextUrl.pathname
-      if (path === "/admin/login") return true
+      if (["/admin/login", "/admin/forgot-password", "/admin/reset-password"].includes(path)) return true
       if (!token) return false
       if (token.mustChangePassword) return path === "/admin/account/password"
       if (!isAdminRole(token.role)) return false

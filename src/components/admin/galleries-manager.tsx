@@ -14,13 +14,14 @@ import { Badge } from "@/components/ui/badge"
 import { AdminImageUpload } from "@/components/admin/image-upload"
 import { ImageWithFallback } from "@/components/site/image-with-fallback"
 import { AdminPageControls } from "@/components/admin/admin-page-controls"
+import { ReadOnlyRecordDialog } from "@/components/admin/read-only-record-dialog"
 
 type GalleryItem = { id?: string; mediaUrl: string; caption: string | null; sortOrder?: number }
 type Gallery = { id: string; title: string; slug: string; description: string | null; category: string | null; coverImage: string | null; status: string; items: GalleryItem[] }
 const EMPTY = { title: "", slug: "", description: "", category: "", coverImage: "", status: "DRAFT" }
 const slugify = (value: string) => value.normalize("NFKD").toLowerCase().replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
 
-export function GalleriesManager() {
+export function GalleriesManager({ readOnly = false }: { readOnly?: boolean }) {
   const [galleries, setGalleries] = useState<Gallery[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
@@ -31,6 +32,7 @@ export function GalleriesManager() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [items, setItems] = useState<GalleryItem[]>([])
+  const [viewing, setViewing] = useState<Gallery | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -132,9 +134,10 @@ export function GalleriesManager() {
 
   const visible = galleries
 
-  return <div>
+  return <div data-admin-readonly={readOnly ? "true" : undefined}>
     <div className="mb-5 flex flex-wrap items-center gap-3">
       <div className="relative min-w-[220px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search galleries" className="h-10 pl-9" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="Search galleries by title or category" /></div>
+      {readOnly && <select aria-label="View gallery details" className="h-10 rounded-md border bg-background px-3 text-sm" value="" onChange={(event) => setViewing(galleries.find((item) => item.id === event.target.value) || null)}><option value="">View gallery details…</option>{galleries.map((gallery) => <option key={gallery.id} value={gallery.id}>{gallery.title}</option>)}</select>}
       <Button onClick={add}><Plus className="mr-2 h-4 w-4" /> Add gallery</Button>
     </div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -145,7 +148,7 @@ export function GalleriesManager() {
     </div>
     <AdminPageControls page={page} totalPages={totalPages} onPageChange={setPage} />
 
-    <Dialog open={open} onOpenChange={setOpen}>
+    {!readOnly && <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader><DialogTitle>{editing ? "Edit gallery" : "Create a gallery"}</DialogTitle><DialogDescription>Upload images, add captions, and save the album details. Uploaded images are optimized automatically.</DialogDescription></DialogHeader>
         <div className="space-y-5 py-2">
@@ -166,6 +169,7 @@ export function GalleriesManager() {
         </div>
         <DialogFooter><Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>Cancel</Button><Button onClick={() => void save()} disabled={saving}>{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{form.status === "PUBLISHED" ? "Publish Gallery" : "Save Draft"}</Button></DialogFooter>
       </DialogContent>
-    </Dialog>
+    </Dialog>}
+    <ReadOnlyRecordDialog title={viewing?.title || "Gallery"} record={viewing as unknown as Record<string, unknown> | null} onOpenChange={(open) => { if (!open) setViewing(null) }} />
   </div>
 }

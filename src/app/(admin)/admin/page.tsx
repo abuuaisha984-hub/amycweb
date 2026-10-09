@@ -2,7 +2,8 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { can, isSuperAdmin } from "@/lib/rbac"
+import { isSuperAdmin } from "@/lib/rbac"
+import { canRead } from "@/lib/permissions"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { ROLE_LABELS } from "@/components/admin/nav-config"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -24,18 +25,18 @@ function countryName(code: string) {
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
   const role = session?.user?.role
-  const canViewArticles = can(role, "article")
-  const canViewSchools = can(role, "school")
-  const canViewRegions = can(role, "region")
-  const canViewMessages = can(role, "contact")
-  const canViewDocuments = can(role, "document")
-  const canViewMedia = can(role, "media") || can(role, "gallery")
-  const canViewEvents = can(role, "event")
+  const canViewArticles = canRead(role, "article")
+  const canViewSchools = canRead(role, "school")
+  const canViewRegions = canRead(role, "region")
+  const canViewMessages = canRead(role, "contact")
+  const canViewDocuments = canRead(role, "document")
+  const canViewMedia = canRead(role, "media") || canRead(role, "gallery")
+  const canViewEvents = canRead(role, "event")
   const canViewAudit = isSuperAdmin(role)
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const week = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  const analytics = can(role, "analytics") ? await Promise.all([
+  const analytics = canRead(role, "analytics") ? await Promise.all([
     db.visitEvent.count({ where: { createdAt: { gte: since } } }),
     db.visitEvent.count({ where: { createdAt: { gte: today } } }),
     db.visitEvent.groupBy({ by: ["pathname"], where: { createdAt: { gte: since } }, _count: { _all: true }, orderBy: { _count: { pathname: "desc" } }, take: 5 }),
@@ -85,14 +86,14 @@ export default async function AdminDashboard() {
         description={`Signed in as ${ROLE_LABELS[session?.user?.role || ""] || "Administrator"}. Here's what's happening across AMYC.`}
         actions={
           <Button asChild className="bg-primary">
-            <Link href="/admin/news">Manage Content</Link>
+            <Link href="/admin/news">{role === "SUPER_ADMIN" ? "Review Content" : "Manage Content"}</Link>
           </Button>
         }
       />
 
       {/* Stats grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {stats.filter((s) => can(role, s.entity)).map((s) => (
+        {stats.filter((s) => canRead(role, s.entity)).map((s) => (
           <Link key={s.label} href={s.href}>
             <Card className="group border-border transition hover:border-primary/30 hover:shadow-soft">
               <CardContent className="p-5">
@@ -135,7 +136,7 @@ export default async function AdminDashboard() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-lg border p-4">
-              <p className="text-sm text-muted-foreground">Total Visitors</p>
+              <p className="text-sm text-muted-foreground">Total Unique Visitors</p>
               <p className="mt-1 font-serif text-3xl font-semibold">{totalVisitors.toLocaleString()}</p>
               <p className="mt-2 text-sm text-muted-foreground">Today {visitorsToday.toLocaleString()} · 7 days {visitorsWeek.toLocaleString()} · 30 days {visitorsMonth.toLocaleString()}</p>
             </div>

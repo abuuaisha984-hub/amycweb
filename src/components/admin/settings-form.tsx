@@ -11,7 +11,7 @@ import { Save, Loader2 } from "lucide-react"
 
 type Stats = Record<string, { label: string; value: string; note?: string }>
 
-export function SettingsForm({ initial }: { initial: Record<string, any> }) {
+export function SettingsForm({ initial, readOnly = false }: { initial: Record<string, any>; readOnly?: boolean }) {
   const [org, setOrg] = useState({
     orgName: initial.orgName || "",
     orgShortName: initial.orgShortName || "",
@@ -55,24 +55,24 @@ export function SettingsForm({ initial }: { initial: Record<string, any> }) {
         <CardHeader className="pb-3"><h2 className="font-serif text-lg font-semibold">Institutional Information</h2></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Organization name</Label><Input value={org.orgName} onChange={(e) => setOrg({ ...org, orgName: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Short name</Label><Input value={org.orgShortName} onChange={(e) => setOrg({ ...org, orgShortName: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Organization name</Label><Input disabled={readOnly} value={org.orgName} onChange={(e) => setOrg({ ...org, orgName: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Short name</Label><Input disabled={readOnly} value={org.orgShortName} onChange={(e) => setOrg({ ...org, orgShortName: e.target.value })} /></div>
           </div>
-          <div className="space-y-1.5"><Label>Tagline</Label><Textarea value={org.tagline} onChange={(e) => setOrg({ ...org, tagline: e.target.value })} rows={2} /></div>
-          <div className="space-y-1.5"><Label>Mission</Label><Textarea value={org.mission} onChange={(e) => setOrg({ ...org, mission: e.target.value })} rows={2} /></div>
-          <div className="space-y-1.5"><Label>Vision</Label><Textarea value={org.vision} onChange={(e) => setOrg({ ...org, vision: e.target.value })} rows={2} /></div>
+          <div className="space-y-1.5"><Label>Tagline</Label><Textarea disabled={readOnly} value={org.tagline} onChange={(e) => setOrg({ ...org, tagline: e.target.value })} rows={2} /></div>
+          <div className="space-y-1.5"><Label>Mission</Label><Textarea disabled={readOnly} value={org.mission} onChange={(e) => setOrg({ ...org, mission: e.target.value })} rows={2} /></div>
+          <div className="space-y-1.5"><Label>Vision</Label><Textarea disabled={readOnly} value={org.vision} onChange={(e) => setOrg({ ...org, vision: e.target.value })} rows={2} /></div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5"><Label>Founded year</Label><Input value={org.foundedYear} onChange={(e) => setOrg({ ...org, foundedYear: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Headquarters</Label><Input value={org.headquarters} onChange={(e) => setOrg({ ...org, headquarters: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Radio station</Label><Input value={org.radioStation} onChange={(e) => setOrg({ ...org, radioStation: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Founded year</Label><Input disabled={readOnly} value={org.foundedYear} onChange={(e) => setOrg({ ...org, foundedYear: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Headquarters</Label><Input disabled={readOnly} value={org.headquarters} onChange={(e) => setOrg({ ...org, headquarters: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Radio station</Label><Input disabled={readOnly} value={org.radioStation} onChange={(e) => setOrg({ ...org, radioStation: e.target.value })} /></div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Email</Label><Input value={org.email} onChange={(e) => setOrg({ ...org, email: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Phone</Label><Input value={org.phone} onChange={(e) => setOrg({ ...org, phone: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Email</Label><Input disabled={readOnly} value={org.email} onChange={(e) => setOrg({ ...org, email: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Phone</Label><Input disabled={readOnly} value={org.phone} onChange={(e) => setOrg({ ...org, phone: e.target.value })} /></div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Address</Label><Input value={org.address} onChange={(e) => setOrg({ ...org, address: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Office hours</Label><Input value={org.officeHours} onChange={(e) => setOrg({ ...org, officeHours: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Address</Label><Input disabled={readOnly} value={org.address} onChange={(e) => setOrg({ ...org, address: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Office hours</Label><Input disabled={readOnly} value={org.officeHours} onChange={(e) => setOrg({ ...org, officeHours: e.target.value })} /></div>
           </div>
         </CardContent>
       </Card>
@@ -85,9 +85,9 @@ export function SettingsForm({ initial }: { initial: Record<string, any> }) {
               <div key={key} className="rounded-lg border border-border p-4">
                 <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">{key}</p>
                 <div className="space-y-2">
-                  <Input value={s.label} onChange={(e) => updateStat(key, "label", e.target.value)} placeholder="Label" className="h-8 text-sm" />
-                  <Input value={s.value} onChange={(e) => updateStat(key, "value", e.target.value)} placeholder="Value" className="h-8 text-sm" />
-                  <Input value={s.note || ""} onChange={(e) => updateStat(key, "note", e.target.value)} placeholder="Note" className="h-8 text-xs" />
+                  <Input disabled={readOnly} value={s.label} onChange={(e) => updateStat(key, "label", e.target.value)} placeholder="Label" className="h-8 text-sm" />
+                  <Input disabled={readOnly} value={s.value} onChange={(e) => updateStat(key, "value", e.target.value)} placeholder="Value" className="h-8 text-sm" />
+                  <Input disabled={readOnly} value={s.note || ""} onChange={(e) => updateStat(key, "note", e.target.value)} placeholder="Note" className="h-8 text-xs" />
                 </div>
               </div>
             ))}
@@ -95,11 +95,11 @@ export function SettingsForm({ initial }: { initial: Record<string, any> }) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      {!readOnly && <div className="flex justify-end">
         <Button onClick={save} className="bg-primary" disabled={saving}>
           {saving ? <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving…</> : <><Save className="mr-1.5 h-4 w-4" /> Save Settings</>}
         </Button>
-      </div>
+      </div>}
     </div>
   )
 }

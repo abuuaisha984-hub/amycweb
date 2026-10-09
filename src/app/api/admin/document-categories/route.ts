@@ -4,20 +4,20 @@ import { randomBytes } from "crypto"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 
 const categoryInput = z.object({ name: z.string().trim().min(2).max(100) })
 function slugify(value: string) { return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }
 
-async function authorize() {
+async function authorize(access: "read" | "write" = "write") {
   const session = await getServerSession(authOptions)
   if (!session?.user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }
-  if (!can(session.user.role, "document")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
+  if (access === "read" ? !canRead(session.user.role, "document") : !can(session.user.role, "document")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
   return { session }
 }
 
 export async function GET() {
-  const auth = await authorize()
+  const auth = await authorize("read")
   if ("response" in auth) return auth.response
   const categories = await db.category.findMany({ where: { type: "DOCUMENT" }, orderBy: { name: "asc" } })
   return NextResponse.json({ categories })

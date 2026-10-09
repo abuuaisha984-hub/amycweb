@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 import { articleInputSchema, parseArticleDate } from "@/lib/article-input"
 
 function slugify(s: string) {
@@ -12,7 +12,7 @@ function slugify(s: string) {
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (!can(session.user.role, "article")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!canRead(session.user.role, "article")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const sp = req.nextUrl.searchParams
   const status = sp.get("status") || undefined
   const kind = sp.get("kind") || undefined

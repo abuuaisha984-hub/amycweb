@@ -12,8 +12,8 @@ export default async function AdminSettingsPage() {
   }
   return (
     <div>
-      <AdminPageHeader title="Settings" description="Manage institutional information and homepage statistics. Changes apply site-wide immediately." />
-      <SettingsForm initial={JSON.parse(JSON.stringify(settings))} />
+      <AdminPageHeader title="Settings" description="Read-only view of institutional information and homepage statistics." />
+      <SettingsForm initial={JSON.parse(JSON.stringify(settings))} readOnly />
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { requireAdminPermission } from "@/lib/admin-page-access"
 import { AdminPagination } from "@/components/admin/admin-pagination"
 
 export default async function AdminMessagesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireAdminPermission("contact")
+  const session = await requireAdminPermission("contact")
   const query = await searchParams
   const rawPage = Array.isArray(query.page) ? query.page[0] : query.page
   const page = Math.max(1, Math.min(100_000, Number.parseInt(rawPage || "1", 10) || 1))
@@ -19,7 +19,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
   return (
     <div>
       <AdminPageHeader title="Messages" description="Inquiries submitted through the public contact form." />
-      <MessagesList messages={JSON.parse(JSON.stringify(currentMessages))} />
+      <MessagesList messages={JSON.parse(JSON.stringify(currentMessages))} readOnly={session.user.role === "SUPER_ADMIN"} />
       <AdminPagination page={safePage} totalPages={totalPages} />
     </div>
   )

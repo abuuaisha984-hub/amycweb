@@ -78,6 +78,9 @@ function AdminLoginForm() {
               </Button>
             </form>
             <div className="mt-4 text-center">
+              <Link href="/admin/forgot-password" className="text-sm font-medium text-primary hover:underline">Forgot Password?</Link>
+            </div>
+            <div className="mt-4 text-center">
               <Link href="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
                 <ArrowLeft className="h-3 w-3" /> Back to website
               </Link>

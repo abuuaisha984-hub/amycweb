@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { AmycLogo } from "@/components/site/logo"
 import { ADMIN_NAV, ROLE_LABELS } from "@/components/admin/nav-config"
-import { can } from "@/lib/rbac"
+import { canRead } from "@/lib/permissions"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -46,8 +46,8 @@ export function AdminShell({
         {ADMIN_NAV.map((item) => {
           const Icon = ICONS[item.icon] || LayoutDashboard
           const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-          if (item.superAdminOnly && !can(user.role, item.href.includes("audit") ? "audit" : "settings")) return null
-          if (item.entity && !can(user.role, item.entity)) return null
+          if (item.superAdminOnly && user.role !== "SUPER_ADMIN") return null
+          if (item.entity && !canRead(user.role, item.entity)) return null
           return (
             <Link
               key={item.href}
@@ -122,7 +122,10 @@ export function AdminShell({
           <div className="w-9" />
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {user.role === "SUPER_ADMIN" && <p className="mb-4 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">Read-only institutional oversight · administrator account management remains available.</p>}
+          {children}
+        </main>
       </div>
     </div>
   )

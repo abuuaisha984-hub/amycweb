@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { db } from "@/lib/db"
 import { authOptions } from "@/lib/auth"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 import { getServerSession } from "next-auth"
 
 const schoolSchema = z.object({
@@ -37,15 +37,15 @@ function cleanOptional(value: string | null | undefined) {
   return value?.trim() || null
 }
 
-async function authorize() {
+async function authorize(access: "read" | "write" = "write") {
   const session = await getServerSession(authOptions)
   if (!session?.user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }
-  if (!can(session.user.role, "school")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
+  if (access === "read" ? !canRead(session.user.role, "school") : !can(session.user.role, "school")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
   return { session }
 }
 
 export async function GET() {
-  const auth = await authorize()
+  const auth = await authorize("read")
   if ("response" in auth) return auth.response
   const [schools, regions] = await Promise.all([
     db.school.findMany({ where: { deletedAt: null }, include: { jimbo: { select: { id: true, name: true, administrativeRegion: true } } }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),

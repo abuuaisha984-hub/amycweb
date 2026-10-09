@@ -23,15 +23,36 @@ model User {
   role               String    @default("CONTENT_ADMIN") // Main operating roles: SUPER_ADMIN | ADMIN; legacy scoped roles remain for existing accounts.
   status             String    @default("ACTIVE") // ACTIVE | SUSPENDED
   mustChangePassword Boolean   @default(false)
+  authVersion        Int       @default(0)
   twoFactorEnabled   Boolean   @default(false)
   scopeRegionId      String? // for REGIONAL_EDITOR — limits access to one Jimbo
   lastLoginAt        DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  auditLogs AuditLog[]
+  auditLogs          AuditLog[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([role])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordRecoveryRateLimit {
+  keyHash    String   @id
+  windowStart DateTime
+  count      Int      @default(0)
+  updatedAt  DateTime @updatedAt
 }
 
 model AuditLog {

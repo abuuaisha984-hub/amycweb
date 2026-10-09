@@ -7,6 +7,6 @@ export default async function AdminRegionsPage() {
   const role = session.user.role || ""
   return <div>
     <AdminPageHeader title="Regions (Majimbo)" description="Maintain regional profiles and verified administrative locations. Draft regions stay private until publication." />
-    <RegionsManager role={role} />
+    <div data-admin-readonly={role === "SUPER_ADMIN" ? "true" : undefined}><RegionsManager role={role} /></div>
   </div>
 }

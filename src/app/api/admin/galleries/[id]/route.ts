@@ -3,11 +3,11 @@ import { z } from "zod"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { can, writeAudit } from "@/lib/rbac"
+import { can, canRead, writeAudit } from "@/lib/rbac"
 
 const schema = z.object({ title: z.string().trim().min(2).max(200), slug: z.string().trim().min(2).max(180).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), description: z.string().trim().max(5000).nullable().optional(), category: z.string().trim().max(100).nullable().optional(), coverImage: z.string().trim().max(1000).nullable().optional(), status: z.enum(["DRAFT", "PUBLISHED"]), items: z.array(z.object({ id: z.string().optional(), mediaUrl: z.string().trim().min(1).max(1000), caption: z.string().trim().max(400).nullable().optional(), sortOrder: z.number().int().min(0).optional() })).max(100) })
 const optional = (value: string | null | undefined) => value?.trim() || null
-async function authorize() { const session = await getServerSession(authOptions); if (!session?.user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }; if (!can(session.user.role, "media") && !can(session.user.role, "gallery")) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }; return { session } }
+async function authorize(access: "read" | "write" = "write") { const session = await getServerSession(authOptions); if (!session?.user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }; const allowed = access === "read" ? canRead(session.user.role, "media") || canRead(session.user.role, "gallery") : can(session.user.role, "media") || can(session.user.role, "gallery"); if (!allowed) return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }; return { session } }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize(); if ("response" in auth) return auth.response; const { id } = await params

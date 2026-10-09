@@ -30,7 +30,7 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
 }
 
-export function MessagesList({ messages: initial }: { messages: Message[] }) {
+export function MessagesList({ messages: initial, readOnly = false }: { messages: Message[]; readOnly?: boolean }) {
   const [messages, setMessages] = useState(initial)
 
   async function updateStatus(id: string, status: string) {
@@ -75,7 +75,7 @@ export function MessagesList({ messages: initial }: { messages: Message[] }) {
                   <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{fmtDate(m.createdAt)}</span>
                 </div>
               </div>
-              <Select value={m.status} onValueChange={(v) => updateStatus(m.id, v)}>
+              <Select value={m.status} onValueChange={(v) => updateStatus(m.id, v)} disabled={readOnly}>
                 <SelectTrigger className="h-8 w-[120px]"><SelectValue /></SelectTrigger>
                 <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>

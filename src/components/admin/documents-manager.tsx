@@ -31,7 +31,7 @@ type Doc = {
 
 type Category = { id: string; name: string; active: boolean }
 
-export function DocumentsManager() {
+export function DocumentsManager({ readOnly = false }: { readOnly?: boolean }) {
   const [docs, setDocs] = useState<Doc[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -143,10 +143,10 @@ export function DocumentsManager() {
   }
 
   return (
-    <div>
+    <div data-admin-readonly={readOnly ? "true" : undefined}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{totalDocuments} documents · Max 25MB · PDF, DOC, XLS, PPT, ZIP, images</p>
-        <div className="flex gap-2"><Button variant="outline" onClick={() => setCategoriesOpen(true)}><Tags className="mr-1.5 h-4 w-4" /> Categories</Button><Button onClick={() => setOpen(true)} className="bg-primary"><Upload className="mr-1.5 h-4 w-4" /> Upload Document</Button></div>
+        {!readOnly && <div className="flex gap-2"><Button variant="outline" onClick={() => setCategoriesOpen(true)}><Tags className="mr-1.5 h-4 w-4" /> Categories</Button><Button onClick={() => setOpen(true)} className="bg-primary"><Upload className="mr-1.5 h-4 w-4" /> Upload Document</Button></div>}
       </div>
 
       <Card>
@@ -182,11 +182,11 @@ export function DocumentsManager() {
                       <td className="px-4 py-3 uppercase text-xs">{d.fileType}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtSize(d.fileSize)}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(d.createdAt)}</td>
-                      <td className="px-4 py-3"><Select value={d.status} onValueChange={(status) => changeStatus(d, status)}><SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger><SelectContent>{["DRAFT", "PUBLISHED"].map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select></td>
+                      <td className="px-4 py-3"><Select value={d.status} onValueChange={(status) => changeStatus(d, status)} disabled={readOnly}><SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger><SelectContent>{["DRAFT", "PUBLISHED"].map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select></td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
                           <a href={publicAssetUrl(d.filePath)} download className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent/20"><Download className="h-3.5 w-3.5 text-primary" /></a>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(d)} aria-label={`Delete ${d.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          {!readOnly && <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => remove(d)} aria-label={`Delete ${d.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>}
                         </div>
                       </td>
                     </tr>
@@ -199,7 +199,7 @@ export function DocumentsManager() {
       </Card>
       <AdminPageControls page={page} totalPages={totalPages} onPageChange={setPage} />
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      {!readOnly && <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
@@ -248,15 +248,15 @@ export function DocumentsManager() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-      <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+      </Dialog>}
+      {!readOnly && <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
         <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
           <DialogHeader><DialogTitle>Document Categories</DialogTitle><DialogDescription>Add categories for new uploads, rename them while keeping existing documents linked, or archive and restore a category.</DialogDescription></DialogHeader>
           <div className="flex gap-2"><Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} placeholder="New category name" /><Button onClick={saveCategory} disabled={savingCategory}>{savingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : editingCategory ? "Save" : "Add"}</Button></div>
           <div className="divide-y rounded-md border">{categories.map((category) => <div key={category.id} className="flex items-center gap-2 p-3"><span className="min-w-0 flex-1 truncate text-sm">{category.name}</span><Badge variant={category.active ? "default" : "secondary"}>{category.active ? "Active" : "Archived"}</Badge><Button size="icon" variant="ghost" aria-label={`Rename ${category.name}`} onClick={() => { setEditingCategory(category); setCategoryName(category.name) }}><Pencil className="h-4 w-4" /></Button><Button size="icon" variant="ghost" aria-label={`${category.active ? "Archive" : "Restore"} ${category.name}`} onClick={() => toggleCategory(category)}><Archive className="h-4 w-4" /></Button></div>)}</div>
           <DialogFooter><Button variant="outline" onClick={() => { setCategoriesOpen(false); setEditingCategory(null); setCategoryName("") }}>Close</Button></DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog>}
     </div>
   )
 }

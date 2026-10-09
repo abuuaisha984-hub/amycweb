@@ -16,7 +16,7 @@ type ProgrammeImage = {
   status: string
 }
 
-export function ProgrammeImagesManager() {
+export function ProgrammeImagesManager({ readOnly = false }: { readOnly?: boolean }) {
   const [programmes, setProgrammes] = useState<ProgrammeImage[]>([])
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
@@ -70,7 +70,7 @@ export function ProgrammeImagesManager() {
   if (loading) return <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading programmes…</div>
   if (programmes.length === 0) return <Card><CardContent className="flex flex-col items-center gap-3 p-10 text-center text-muted-foreground"><ImageIcon className="h-8 w-8" /><p>No programmes are available to update.</p></CardContent></Card>
 
-  return <div className="grid gap-5 xl:grid-cols-2">
+  return <div data-admin-readonly={readOnly ? "true" : undefined} className="grid gap-5 xl:grid-cols-2">
     {programmes.map((programme) => {
       const image = Object.hasOwn(drafts, programme.id) ? drafts[programme.id] : programme.image || ""
       const changed = image !== (programme.image || "")

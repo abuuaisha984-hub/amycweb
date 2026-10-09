@@ -47,14 +47,14 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new E
 
 const password = await readHidden("New password (14+ characters): ")
 const confirmation = await readHidden("Confirm new password: ")
-if (password.length < 14 || password.length > 1024) throw new Error("Password must be between 14 and 1024 characters.")
+if (password.length < 14 || password.length > 128) throw new Error("Password must be between 14 and 128 characters.")
 if (password !== confirmation) throw new Error("Passwords do not match.")
 
 const db = new PrismaClient()
 try {
   const user = await db.user.findUnique({ where: { email }, select: { id: true, status: true } })
   if (!user || user.status !== "ACTIVE") throw new Error("No active admin account matched that email.")
-  await db.user.update({ where: { id: user.id }, data: { passwordHash: hashPassword(password) } })
+  await db.user.update({ where: { id: user.id }, data: { passwordHash: hashPassword(password), authVersion: { increment: 1 } } })
   console.log("Admin password changed. The entered password and hash were not printed.")
 } finally {
   await db.$disconnect()

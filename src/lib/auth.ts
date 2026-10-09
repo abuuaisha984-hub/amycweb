@@ -70,6 +70,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           scopeRegionId: user.scopeRegionId ?? undefined,
           mustChangePassword: user.mustChangePassword,
+          authVersion: user.authVersion,
         } as any
       },
     }),
@@ -81,18 +82,20 @@ export const authOptions: NextAuthOptions = {
         token.userId = (user as any).id
         token.scopeRegionId = (user as any).scopeRegionId
         token.mustChangePassword = (user as any).mustChangePassword
+        token.authVersion = (user as any).authVersion
         return token
       }
       if (token.userId) {
         const currentUser = await db.user.findUnique({
           where: { id: String(token.userId) },
-          select: { role: true, status: true, scopeRegionId: true, mustChangePassword: true },
+          select: { role: true, status: true, scopeRegionId: true, mustChangePassword: true, authVersion: true },
         })
-        if (!currentUser || currentUser.status !== "ACTIVE" || !isAdminRole(currentUser.role)) {
+        if (!currentUser || currentUser.status !== "ACTIVE" || !isAdminRole(currentUser.role) || typeof token.authVersion !== "number" || token.authVersion !== currentUser.authVersion) {
           token.role = undefined
           token.userId = undefined
           token.scopeRegionId = undefined
           token.mustChangePassword = undefined
+          token.authVersion = undefined
         } else {
           token.role = currentUser.mustChangePassword ? undefined : currentUser.role
           token.scopeRegionId = currentUser.scopeRegionId ?? undefined
@@ -126,6 +129,7 @@ declare module "next-auth" {
       role?: string
       scopeRegionId?: string
       mustChangePassword?: boolean
+      authVersion?: number
     }
   }
 }
@@ -135,5 +139,6 @@ declare module "next-auth/jwt" {
     userId?: string
     scopeRegionId?: string
     mustChangePassword?: boolean
+    authVersion?: number
   }
 }

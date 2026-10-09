@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { getSession } from "next-auth/react"
+import { getSession, signIn } from "next-auth/react"
 import { toast } from "sonner"
 import { Loader2, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -22,12 +22,20 @@ export function ChangePasswordForm({ required = false }: { required?: boolean })
     if (newPassword !== confirmPassword) { toast.error("The new passwords do not match."); return }
     setSaving(true)
     try {
+      const currentSession = await getSession()
+      const email = currentSession?.user?.email
+      if (!email) throw new Error("Your session expired. Sign in again before changing your password.")
       const response = await fetch("/api/admin/account/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword, newPassword }) })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || "Could not change password.")
+      const refreshed = await signIn("credentials", { email, password: newPassword, redirect: false })
+      if (!refreshed?.ok) {
+        router.replace("/admin/login?passwordChanged=1")
+        return
+      }
       toast.success("Password changed successfully.")
-      await getSession()
-      router.push("/admin")
+      router.replace("/admin")
+      router.refresh()
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not change password.") }
     finally { setSaving(false) }
   }

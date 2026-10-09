@@ -6,6 +6,6 @@ export default async function AdminLeadersPage() {
   const session = await requireAdminPermission("leader")
   return <div>
     <AdminPageHeader title="Leadership" description="Manage active and former national or regional leadership records, including public biographies and role dates." />
-    <LeadersManager role={session?.user?.role || ""} />
+    <div data-admin-readonly={session?.user?.role === "SUPER_ADMIN" ? "true" : undefined}><LeadersManager role={session?.user?.role || ""} /></div>
   </div>
 }
