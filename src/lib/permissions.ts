@@ -14,8 +14,12 @@ export const ROLE_PERMISSIONS: Record<AdminRole, string[]> = {
   ADMIN: ["article", "event", "gallery", "leader", "contact", "media", "school", "region", "document", "programme", "analytics"],
 }
 
+export function isAdminRole(role: unknown): role is AdminRole {
+  return typeof role === "string" && Object.hasOwn(ROLE_PERMISSIONS, role)
+}
+
 export function can(role: string | undefined, entity: string): boolean {
-  if (!role || !Object.hasOwn(ROLE_PERMISSIONS, role)) return false
+  if (!isAdminRole(role)) return false
   const permissions = ROLE_PERMISSIONS[role as AdminRole]
   return permissions.includes("*") || permissions.includes(entity)
 }

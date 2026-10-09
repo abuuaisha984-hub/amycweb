@@ -1,7 +1,7 @@
 import { withAuth } from "next-auth/middleware"
 import { getToken } from "next-auth/jwt"
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server"
-import { canAccessAdminPath } from "@/lib/permissions"
+import { canAccessAdminPath, isAdminRole } from "@/lib/permissions"
 
 // Keep proxy token lookup aligned with the custom session cookie in auth.ts.
 const sessionCookieName = "next-auth.session-token"
@@ -14,6 +14,7 @@ const protectAdmin = withAuth({
       if (path === "/admin/login") return true
       if (!token) return false
       if (token.mustChangePassword) return path === "/admin/account/password"
+      if (!isAdminRole(token.role)) return false
       if (canAccessAdminPath(String(token.role || ""), path)) return true
       return false
     },

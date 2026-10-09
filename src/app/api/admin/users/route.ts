@@ -19,7 +19,7 @@ export async function GET() {
   if ("response" in auth) return auth.response
   const users = await db.user.findMany({
     where: { role: "ADMIN" },
-    select: { id: true, name: true, email: true, status: true, mustChangePassword: true, lastLoginAt: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, status: true, mustChangePassword: true, lastLoginAt: true, createdAt: true },
     orderBy: [{ status: "asc" }, { name: "asc" }],
   })
   return NextResponse.json({ users })

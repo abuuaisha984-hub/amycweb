@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto"
+import { randomBytes, randomUUID, scryptSync } from "node:crypto"
 import { cp, copyFile, mkdir, rm } from "node:fs/promises"
 import net from "node:net"
 import os from "node:os"
@@ -56,6 +56,46 @@ try {
       scopeRegionId: regionA.id,
     },
   })
+  const invalidRoleUser = await db.user.create({
+    data: {
+      email: `invalid-role-test-${randomUUID()}@example.invalid`,
+      name: "Invalid Role Test",
+      passwordHash: "test-only-not-used-for-login",
+      role: "UNRECOGNIZED_TEST_ROLE",
+      status: "ACTIVE",
+    },
+  })
+  const forcedPasswordUser = await db.user.create({
+    data: {
+      email: `forced-password-test-${randomUUID()}@example.invalid`,
+      name: "Forced Password Test",
+      passwordHash: "test-only-not-used-for-login",
+      role: "ADMIN",
+      status: "ACTIVE",
+      mustChangePassword: true,
+    },
+  })
+  const superAdminPassword = randomBytes(24).toString("base64url")
+  const superAdminSalt = randomBytes(16).toString("hex")
+  const superAdminHash = scryptSync(superAdminPassword, superAdminSalt, 64).toString("hex")
+  const superAdmin = await db.user.create({
+    data: {
+      email: `super-admin-test-${randomUUID()}@example.invalid`,
+      name: "Super Admin Login Test",
+      passwordHash: `scrypt:${superAdminSalt}:${superAdminHash}`,
+      role: "SUPER_ADMIN",
+      status: "ACTIVE",
+    },
+  })
+  const ordinaryAdmin = await db.user.create({
+    data: {
+      email: `ordinary-admin-test-${randomUUID()}@example.invalid`,
+      name: "Ordinary Admin Test",
+      passwordHash: "test-only-not-used-for-login",
+      role: "ADMIN",
+      status: "ACTIVE",
+    },
+  })
   const otherRegionArticle = await db.article.create({
     data: {
       slug: `regional-scope-test-${randomUUID()}`,
@@ -100,8 +140,106 @@ try {
   }
   if (!ready) throw new Error(`Test server did not become ready. ${serverOutput}`)
 
+  const csrfResponse = await fetch(`${origin}/api/auth/csrf`)
+  await expectStatus(csrfResponse, 200, "Credentials login CSRF endpoint")
+  const csrfBody = await csrfResponse.json()
+  const csrfCookie = csrfResponse.headers.getSetCookie().map((value) => value.split(";", 1)[0]).join("; ")
+  const credentialsResponse = await fetch(`${origin}/api/auth/callback/credentials`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", cookie: csrfCookie },
+    body: new URLSearchParams({ csrfToken: csrfBody.csrfToken, callbackUrl: `${origin}/admin`, email: superAdmin.email, password: superAdminPassword, json: "true" }),
+    redirect: "manual",
+  })
+  await expectStatus(credentialsResponse, 200, "Super Admin credentials callback")
+  const sessionCookie = credentialsResponse.headers.getSetCookie().map((value) => value.split(";", 1)[0]).find((value) => value.startsWith("next-auth.session-token="))
+  if (!sessionCookie) throw new Error("Successful test credentials callback did not issue the configured session cookie.")
+  const authCookie = [csrfCookie, sessionCookie].filter(Boolean).join("; ")
+  const sessionResponse = await fetch(`${origin}/api/auth/session`, { headers: { cookie: authCookie } })
+  await expectStatus(sessionResponse, 200, "Super Admin session endpoint")
+  const sessionBody = await sessionResponse.json()
+  if (sessionBody?.user?.role !== "SUPER_ADMIN" || sessionBody?.user?.id !== superAdmin.id) {
+    throw new Error("Super Admin login did not return the expected test session role and identity.")
+  }
+  await expectStatus(await fetch(`${origin}/admin`, { headers: { cookie: authCookie } }), 200, "Super Admin dashboard")
+  const accountListResponse = await fetch(`${origin}/api/admin/users`, { headers: { cookie: authCookie } })
+  await expectStatus(accountListResponse, 200, "Super Admin account list")
+  const accountList = await accountListResponse.json()
+  if (!accountList.users.some(({ id, role }) => id === ordinaryAdmin.id && role === "ADMIN") || accountList.users.some(({ role }) => typeof role !== "string")) {
+    throw new Error("Admin account list did not show persisted roles correctly.")
+  }
+
+  const createdAdminEmail = `provisioned-admin-test-${randomUUID()}@example.invalid`
+  const createAdminResponse = await fetch(`${origin}/api/admin/users`, {
+    method: "POST",
+    headers: { cookie: authCookie, "content-type": "application/json" },
+    body: JSON.stringify({ name: "Provisioned Admin Test", email: createdAdminEmail }),
+  })
+  await expectStatus(createAdminResponse, 201, "Super Admin creates an Admin account")
+  const createdAdminResult = await createAdminResponse.json()
+  if (!createdAdminResult.temporaryPassword || "passwordHash" in createdAdminResult.user) {
+    throw new Error("Admin provisioning did not return a one-time password safely.")
+  }
+  const createdAdmin = await db.user.findUnique({ where: { email: createdAdminEmail } })
+  if (!createdAdmin || createdAdmin.role !== "ADMIN" || createdAdmin.status !== "ACTIVE" || !createdAdmin.mustChangePassword) {
+    throw new Error("Provisioned Admin did not persist the expected role, status and first-login requirement.")
+  }
+  const [hashScheme, hashSalt, storedHash] = createdAdmin.passwordHash.split(":")
+  const candidateHash = scryptSync(createdAdminResult.temporaryPassword, hashSalt, 64).toString("hex")
+  if (hashScheme !== "scrypt" || candidateHash !== storedHash) throw new Error("The provisioned temporary password was not stored as the expected scrypt hash.")
+
+  const firstLoginCsrfResponse = await fetch(`${origin}/api/auth/csrf`)
+  await expectStatus(firstLoginCsrfResponse, 200, "First-login CSRF endpoint")
+  const firstLoginCsrf = await firstLoginCsrfResponse.json()
+  const firstLoginCsrfCookie = firstLoginCsrfResponse.headers.getSetCookie().map((value) => value.split(";", 1)[0]).join("; ")
+  const firstLoginResponse = await fetch(`${origin}/api/auth/callback/credentials`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", cookie: firstLoginCsrfCookie },
+    body: new URLSearchParams({ csrfToken: firstLoginCsrf.csrfToken, callbackUrl: `${origin}/admin`, email: createdAdminEmail, password: createdAdminResult.temporaryPassword, json: "true" }),
+    redirect: "manual",
+  })
+  await expectStatus(firstLoginResponse, 200, "First-login credentials callback")
+  const firstLoginSessionCookie = firstLoginResponse.headers.getSetCookie().map((value) => value.split(";", 1)[0]).find((value) => value.startsWith("next-auth.session-token="))
+  if (!firstLoginSessionCookie) throw new Error("First-login callback did not issue a session cookie.")
+  let firstLoginCookie = [firstLoginCsrfCookie, firstLoginSessionCookie].filter(Boolean).join("; ")
+  const firstLoginDashboard = await fetch(`${origin}/admin`, { headers: { cookie: firstLoginCookie }, redirect: "manual" })
+  if (firstLoginDashboard.status !== 307 || !firstLoginDashboard.headers.get("location")?.endsWith("/admin/account/password")) {
+    throw new Error("First-login Admin was not routed to password change.")
+  }
+  await expectStatus(await fetch(`${origin}/admin/account/password`, { headers: { cookie: firstLoginCookie } }), 200, "First-login password form")
+  const replacementPassword = randomBytes(24).toString("base64url")
+  const passwordChangeResponse = await fetch(`${origin}/api/admin/account/password`, {
+    method: "POST",
+    headers: { cookie: firstLoginCookie, "content-type": "application/json" },
+    body: JSON.stringify({ currentPassword: createdAdminResult.temporaryPassword, newPassword: replacementPassword }),
+  })
+  await expectStatus(passwordChangeResponse, 200, "First-login password change")
+  const refreshedSessionResponse = await fetch(`${origin}/api/auth/session`, { headers: { cookie: firstLoginCookie } })
+  await expectStatus(refreshedSessionResponse, 200, "Session refresh after first password change")
+  const refreshedCookies = refreshedSessionResponse.headers.getSetCookie().map((value) => value.split(";", 1)[0])
+  const refreshedSessionCookie = refreshedCookies.find((value) => value.startsWith("next-auth.session-token="))
+  if (refreshedSessionCookie) firstLoginCookie = [firstLoginCsrfCookie, refreshedSessionCookie].join("; ")
+  const refreshedSession = await refreshedSessionResponse.json()
+  if (refreshedSession?.user?.role !== "ADMIN" || refreshedSession?.user?.mustChangePassword) {
+    throw new Error("Password change did not restore the Admin role in the refreshed session.")
+  }
+  const updatedAdmin = await db.user.findUnique({ where: { id: createdAdmin.id } })
+  if (!updatedAdmin || updatedAdmin.mustChangePassword || updatedAdmin.passwordHash === createdAdmin.passwordHash) {
+    throw new Error("First-login password change did not persist correctly.")
+  }
+  await expectStatus(await fetch(`${origin}/admin`, { headers: { cookie: firstLoginCookie } }), 200, "Dashboard after first password change")
+
   const cookieToken = await encode({
     token: { name: user.name, email: user.email, role: user.role, userId: user.id, scopeRegionId: regionA.id },
+    secret,
+    maxAge: 8 * 60 * 60,
+  })
+  const invalidRoleToken = await encode({
+    token: { name: invalidRoleUser.name, email: invalidRoleUser.email, role: invalidRoleUser.role, userId: invalidRoleUser.id },
+    secret,
+    maxAge: 8 * 60 * 60,
+  })
+  const forcedPasswordToken = await encode({
+    token: { name: forcedPasswordUser.name, email: forcedPasswordUser.email, role: forcedPasswordUser.role, userId: forcedPasswordUser.id, mustChangePassword: true },
     secret,
     maxAge: 8 * 60 * 60,
   })
@@ -113,6 +251,32 @@ try {
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   })
+
+  const ordinaryAdminToken = await encode({
+    token: { name: ordinaryAdmin.name, email: ordinaryAdmin.email, role: ordinaryAdmin.role, userId: ordinaryAdmin.id },
+    secret,
+    maxAge: 8 * 60 * 60,
+  })
+  await expectStatus(await fetch(`${origin}/api/admin/news`, { headers: { cookie: `next-auth.session-token=${ordinaryAdminToken}` } }), 200, "Ordinary Admin content permission")
+  await expectStatus(await fetch(`${origin}/api/admin/users`, { headers: { cookie: `next-auth.session-token=${ordinaryAdminToken}` } }), 403, "Ordinary Admin Super Admin-only permission")
+  const suspendResponse = await fetch(`${origin}/api/admin/users/${ordinaryAdmin.id}`, {
+    method: "PATCH",
+    headers: { cookie: authCookie, "content-type": "application/json" },
+    body: JSON.stringify({ status: "SUSPENDED" }),
+  })
+  await expectStatus(suspendResponse, 200, "Super Admin suspends an ordinary Admin")
+  await expectStatus(await fetch(`${origin}/api/admin/news`, { headers: { cookie: `next-auth.session-token=${ordinaryAdminToken}` } }), 403, "Suspended ordinary Admin existing session")
+  const suspendedDashboard = await fetch(`${origin}/admin`, { headers: { cookie: `next-auth.session-token=${ordinaryAdminToken}` }, redirect: "manual" })
+  if (suspendedDashboard.status !== 307 || !suspendedDashboard.headers.get("location")?.includes("/admin/login")) {
+    throw new Error("A suspended Admin session was not redirected away from the protected dashboard.")
+  }
+  const enableResponse = await fetch(`${origin}/api/admin/users/${ordinaryAdmin.id}`, {
+    method: "PATCH",
+    headers: { cookie: authCookie, "content-type": "application/json" },
+    body: JSON.stringify({ status: "ACTIVE" }),
+  })
+  await expectStatus(enableResponse, 200, "Super Admin enables an ordinary Admin")
+  await expectStatus(await fetch(`${origin}/api/admin/news`, { headers: { cookie: `next-auth.session-token=${ordinaryAdminToken}` } }), 200, "Reactivated ordinary Admin session")
 
   const scopedRegionsResponse = await request("/api/admin/regions")
   await expectStatus(scopedRegionsResponse, 200, "Regional editor region list")
@@ -169,7 +333,24 @@ try {
   }), 200, "Update content in assigned region")
   await expectStatus(await request(`/api/admin/news/${ownArticleBody.article.id}`, "DELETE"), 200, "Delete content in assigned region")
 
-  console.log("Regional editor integration checks passed: region/news/leader lists are scoped, cross-region create/update/delete and global events are forbidden, and own-region news create/update/archive succeeds.")
+  await db.user.update({ where: { id: user.id }, data: { status: "SUSPENDED" } })
+  await expectStatus(await request("/api/admin/news"), 403, "Existing session after account suspension")
+  await db.user.update({ where: { id: user.id }, data: { status: "ACTIVE" } })
+  await expectStatus(await request("/api/admin/news"), 200, "Existing session after account reactivation")
+
+  await expectStatus(await fetch(`${origin}/api/admin/news`, { headers: { cookie: `next-auth.session-token=${invalidRoleToken}` } }), 403, "Unknown database role API access")
+  const invalidRolePage = await fetch(`${origin}/admin`, { headers: { cookie: `next-auth.session-token=${invalidRoleToken}` }, redirect: "manual" })
+  if (invalidRolePage.status !== 307 || !invalidRolePage.headers.get("location")?.includes("/api/auth/signin")) {
+    throw new Error(`A user with an unrecognized role was not redirected away from the admin dashboard (HTTP ${invalidRolePage.status}, location ${invalidRolePage.headers.get("location") || "none"}).`)
+  }
+
+  const forcedPasswordDashboard = await fetch(`${origin}/admin`, { headers: { cookie: `next-auth.session-token=${forcedPasswordToken}` }, redirect: "manual" })
+  if (forcedPasswordDashboard.status !== 307 || !forcedPasswordDashboard.headers.get("location")?.endsWith("/admin/account/password")) {
+    throw new Error("A first-login user was not redirected to change their password.")
+  }
+  await expectStatus(await fetch(`${origin}/admin/account/password`, { headers: { cookie: `next-auth.session-token=${forcedPasswordToken}` } }), 200, "First-login password change page")
+
+  console.log("Regional/admin auth integration checks passed: test Super Admin credentials create a session and load the dashboard/account list; ordinary Admin permissions remain limited; regional permissions remain scoped; suspension is enforced on the next protected request; reactivation restores access; unknown roles are denied; and first-login users can reach only the password-change flow.")
 } finally {
   if (server && server.exitCode === null) {
     server.kill("SIGTERM")

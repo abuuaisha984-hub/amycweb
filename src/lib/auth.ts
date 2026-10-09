@@ -2,10 +2,10 @@ import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { db } from "@/lib/db"
 import { verifyPassword } from "@/lib/password"
+import { isAdminRole } from "@/lib/permissions"
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
 const LOGIN_MAX_FAILURES = 8
-const JWT_USER_REVALIDATE_MS = 60 * 1000
 const failedLogins = new Map<string, { count: number; expiresAt: number }>()
 
 function isLoginThrottled(key: string) {
@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.toLowerCase().trim()
         if (email.length > 254 || isLoginThrottled(email)) return null
         const user = await db.user.findUnique({ where: { email } })
-        if (!user || user.status !== "ACTIVE" || !verifyPassword(credentials.password, user.passwordHash)) {
+        if (!user || user.status !== "ACTIVE" || !isAdminRole(user.role) || !verifyPassword(credentials.password, user.passwordHash)) {
           recordFailedLogin(email)
           return null
         }
@@ -76,33 +76,27 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      const now = Date.now()
       if (user) {
         token.role = (user as any).role
         token.userId = (user as any).id
         token.scopeRegionId = (user as any).scopeRegionId
         token.mustChangePassword = (user as any).mustChangePassword
-        token.userCheckedAt = now
+        return token
       }
-      if (
-        token.userId &&
-        (typeof token.userCheckedAt !== "number" || now - token.userCheckedAt >= JWT_USER_REVALIDATE_MS)
-      ) {
+      if (token.userId) {
         const currentUser = await db.user.findUnique({
           where: { id: String(token.userId) },
           select: { role: true, status: true, scopeRegionId: true, mustChangePassword: true },
         })
-        if (!currentUser || currentUser.status !== "ACTIVE") {
+        if (!currentUser || currentUser.status !== "ACTIVE" || !isAdminRole(currentUser.role)) {
           token.role = undefined
           token.userId = undefined
           token.scopeRegionId = undefined
           token.mustChangePassword = undefined
-          token.userCheckedAt = now
         } else {
           token.role = currentUser.mustChangePassword ? undefined : currentUser.role
           token.scopeRegionId = currentUser.scopeRegionId ?? undefined
           token.mustChangePassword = currentUser.mustChangePassword
-          token.userCheckedAt = now
         }
       }
       return token
@@ -141,6 +135,5 @@ declare module "next-auth/jwt" {
     userId?: string
     scopeRegionId?: string
     mustChangePassword?: boolean
-    userCheckedAt?: number
   }
 }
